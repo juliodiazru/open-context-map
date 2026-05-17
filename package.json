@@ -1,0 +1,33 @@
+{
+  "name": "open-context-map",
+  "version": "0.1.0",
+  "description": "Mapa local de contexto de codigo con CLI y MCP para opencode.",
+  "type": "module",
+  "private": false,
+  "bin": {
+    "open-context-map": "./src/cli.js"
+  },
+  "files": [
+    "src/",
+    "README.md",
+    "SECURITY.md",
+    "docs/"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "validate:interest-lab": "node scripts/validate-interest-lab.mjs",
+    "audit": "npm audit --audit-level=moderate",
+    "check": "npm test && npm audit --audit-level=moderate"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "mcp",
+    "opencode",
+    "code-graph",
+    "context-engine",
+    "repo-map"
+  ],
+  "license": "MIT"
+}

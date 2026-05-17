@@ -1,0 +1,7 @@
+node_modules/
+.open-context-map/
+.repo-graph/
+coverage/
+.DS_Store
+npm-debug.log*
+*.log
