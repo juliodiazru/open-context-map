@@ -19,6 +19,8 @@ const CALL_SKIP_WORDS = new Set([
   "super",
 ])
 
+const MAX_SNIPPET_CHARS = 160
+
 export function languageForFile(filePath) {
   if (/\.(js|mjs|cjs|jsx)$/.test(filePath)) return "javascript"
   if (/\.(ts|tsx)$/.test(filePath)) return "typescript"
@@ -118,7 +120,7 @@ function collectImports(codeTrimmed, rawTrimmed, line, imports) {
     if (!detector.detect.test(codeTrimmed)) continue
     const match = rawTrimmed.match(detector.extract)
     if (match) {
-      imports.push({ target: match[1], line })
+      imports.push({ target: sanitizeSnippet(match[1]), line })
       return
     }
   }
@@ -135,7 +137,7 @@ function matchClass(codeTrimmed, rawTrimmed, line) {
 
   for (const pattern of patterns) {
     const match = codeTrimmed.match(pattern)
-    if (match) return symbol("class", match[1], line, rawTrimmed)
+    if (match) return symbol("class", match[1], line, sanitizeSnippet(rawTrimmed))
   }
   return null
 }
@@ -159,7 +161,7 @@ function matchFunction(codeTrimmed, rawTrimmed, line, currentClass) {
     const rawName = match[1]
     if (CALL_SKIP_WORDS.has(rawName)) continue
     const name = currentClass && !rawName.includes(".") ? `${currentClass}.${rawName}` : rawName
-    return symbol(currentClass ? "method" : "function", name, line, rawTrimmed)
+    return symbol(currentClass ? "method" : "function", name, line, sanitizeSnippet(rawTrimmed))
   }
   return null
 }
@@ -175,7 +177,7 @@ function collectCalls(codeTrimmed, rawTrimmed, line, calls, declaredShortName = 
     if (/\bnew\s+$/.test(beforeMatch)) continue
     if (declaredShortName && match.index < declarationEnd && callName === declaredShortName) continue
     if (CALL_SKIP_WORDS.has(callName)) continue
-    calls.push({ name: callName, objectName, line, text: rawTrimmed })
+    calls.push({ name: callName, objectName, line, text: sanitizeSnippet(rawTrimmed) })
   }
 }
 
@@ -197,6 +199,24 @@ function declarationBoundary(codeTrimmed) {
   const arrowStart = codeTrimmed.indexOf("=>")
   if (arrowStart !== -1) return arrowStart + 2
   return 0
+}
+
+function sanitizeSnippet(text) {
+  return compactSnippet(redactSensitiveText(text.trim()))
+}
+
+function compactSnippet(text) {
+  if (text.length <= MAX_SNIPPET_CHARS) return text
+  return `${text.slice(0, MAX_SNIPPET_CHARS - 3)}...`
+}
+
+function redactSensitiveText(text) {
+  return text
+    .replace(/\b(Bearer\s+)[A-Za-z0-9._=-]+/g, "$1[redacted]")
+    .replace(/\bghp_[A-Za-z0-9]{20,}\b/g, "ghp_[redacted]")
+    .replace(/\bgithub_pat_[A-Za-z0-9_]+\b/g, "github_pat_[redacted]")
+    .replace(/\bAKIA[0-9A-Z]{16}\b/g, "AKIA[redacted]")
+    .replace(/\b((?:api[_-]?key|token|secret|password|passwd|private[_-]?key))\b(\s*[:=]\s*)(["'`])([^"'`]+)\3/ig, "$1$2$3[redacted]$3")
 }
 
 function stripNonCode(text) {

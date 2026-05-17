@@ -1,40 +1,42 @@
-# Seguridad para principiantes
+# Security for beginners
 
-Este proyecto nacio con seguridad como prioridad.
+This project was built with security as a priority.
 
-## Por que importa
+## Why it matters
 
-En el ecosistema NPM han ocurrido ataques de supply chain.
+Supply chain attacks have happened in the JavaScript ecosystem.
 
-Eso significa que un problema en paquetes, scripts de instalacion, tokens o CI puede terminar afectando tu proyecto.
+That means a problem in packages, install scripts, tokens, or CI can end up affecting your project.
 
-## Decisiones de seguridad de este POC
+## Security decisions in this POC
 
-### Sin dependencias runtime externas
+### No external runtime dependencies
 
-La parte principal del motor usa solo APIs nativas de Node.js.
+The main engine uses only built-in Node.js APIs.
 
-Eso no elimina todo riesgo, pero baja mucho la superficie de ataque inicial.
+That does not remove all risk, but it greatly reduces the initial attack surface.
 
-### Instalacion simple pero revisable
+### Simple but reviewable installation
 
-La forma objetivo sera:
+The target install flow is:
 
 ```bash
-npx -y open-context-map@0.1.0 init .
+pnpm dlx open-context-map@0.1.0 init .
 ```
 
-Eso sigue el patron oficial de `opencode` para MCP locales con comandos tipo `npx`, pero se recomienda fijar version y revisar el paquete antes de adoptarlo.
+That follows the official `opencode` pattern for local MCPs with `pnpm dlx` commands, but pinning the version and reviewing the package before adopting it is still recommended.
 
-### No ejecuta codigo del repo analizado
+To lower risk, `init` only accepts the official `open-context-map` package or a pinned version of that same package.
 
-El motor solo lee archivos como texto.
+### It does not execute code from the analyzed repo
 
-No hace `import` ni `require` del codigo que analiza.
+The engine only reads files as text.
 
-### Ignora carpetas pesadas o peligrosas
+It does not `import` or `require` the code it analyzes.
 
-No analiza por defecto carpetas como:
+### It ignores heavy or risky directories
+
+By default it does not analyze directories such as:
 
 - `node_modules`
 - `.git`
@@ -44,63 +46,87 @@ No analiza por defecto carpetas como:
 - `.cache`
 - `target`
 
-### Limita archivos grandes
+### It limits large files
 
-Si un archivo supera el tamano permitido, se omite.
+If a file is larger than the allowed size, it is skipped.
 
-### Bloquea rutas fuera del repo
+### It blocks paths outside the repo
 
-El MCP no deberia aceptar rutas arbitrarias fuera de la raiz configurada.
+The MCP should not accept arbitrary paths outside the configured root.
 
-Esto evita que una llamada al MCP lea otro proyecto o una carpeta sensible por accidente.
+This helps avoid reading another project or a sensitive folder by accident.
 
-### Limita entradas del usuario
+### It limits user input
 
-El comando `trace` limita la profundidad maxima.
+The `trace` command limits maximum depth.
 
-La busqueda limita la cantidad maxima de resultados.
+Search limits the maximum number of results.
 
-El tipo de contexto solo acepta valores conocidos: `bug`, `refactor`, `feature` y `general`.
+The context type only accepts known values: `bug`, `refactor`, `feature`, and `general`.
 
-Esto ayuda a evitar respuestas enormes y consumo innecesario de memoria.
+This helps avoid huge responses and unnecessary memory usage.
 
-### Indice local separado
+### Separate local index
 
-El resultado se guarda en:
+The result is stored in:
 
 ```text
 .open-context-map/index.json
 ```
 
-Ese archivo esta ignorado por git.
+That file is ignored by git.
 
-La razon es simple: para este flujo no hace falta una base de datos externa.
+The reason is simple: this workflow does not need an external database.
 
-Menos piezas externas tambien significa menos superficie operativa y menos pasos para instalar o desinstalar.
+Fewer external moving parts also means less operational surface and fewer install or uninstall steps.
 
-## Comandos de revision
+### Basic secret redaction
 
-Ejecuta:
+Before storing signatures and call details in the local index, the engine tries to hide common patterns such as `Bearer ...`, `ghp_...`, `github_pat_...`, `AKIA...`, and assignments with names like `token`, `secret`, `password`, or `apiKey`.
+
+It is not full DLP, but it helps avoid repeating obvious secrets inside the index and also reduces noise in MCP responses.
+
+### How to review untrusted branches or PRs
+
+There is an important point: `opencode.json` and `.opencode/` are configuration that a project can bring with it.
+
+If you are about to open a branch or PR you do not trust yet, review it with project configuration disabled:
 
 ```bash
-npm run check
+OPENCODE_DISABLE_PROJECT_CONFIG=1 opencode
 ```
 
-Eso corre pruebas y auditoria basica.
+That lowers the risk that repository configuration executes something you have not reviewed yet.
 
-## Si un dia se publica en NPM
+## Review commands
 
-Conviene agregar o reforzar:
+Run:
+
+```bash
+pnpm run check
+```
+
+That runs tests and a basic audit.
+
+## If it is ever published to the package registry
+
+It would be worth adding or strengthening:
 
 - 2FA
-- trusted publishing con OIDC
+- trusted publishing with OIDC
 - provenance
-- revision de cada dependencia nueva
-- CodeQL o Semgrep
-- Dependabot o Renovate
+- review of every new dependency
+- CodeQL or Semgrep
+- Dependabot or Renovate
 - OpenSSF Scorecard
 
-## Fuentes usadas
+## CI and pull requests
+
+- Use `pull_request` to test untrusted PRs.
+- Avoid `pull_request_target` if you will check out and execute PR code.
+- Keep minimal permissions in GitHub Actions and avoid storing tokens in steps that do not need them.
+
+## Sources used
 
 - OpenCode MCP servers: https://opencode.ai/docs/mcp-servers/
 - OpenCode config schema: https://opencode.ai/config.json
@@ -108,10 +134,10 @@ Conviene agregar o reforzar:
 - OpenCode commands: https://opencode.ai/docs/commands/
 - OpenCode agents: https://opencode.ai/docs/agents/
 - Node.js security releases: https://nodejs.org/en/blog/vulnerability/
-- NPM threats and mitigations: https://docs.npmjs.com/threats-and-mitigations
-- NPM registry signatures: https://docs.npmjs.com/about-registry-signatures
-- NPM audit: https://docs.npmjs.com/auditing-package-dependencies-for-security-vulnerabilities/
-- NPM provenance: https://docs.npmjs.com/generating-provenance-statements
+- Registry threats and mitigations: https://docs.npmjs.com/threats-and-mitigations
+- Registry signatures: https://docs.npmjs.com/about-registry-signatures
+- Audit docs: https://docs.npmjs.com/auditing-package-dependencies-for-security-vulnerabilities/
+- Provenance docs: https://docs.npmjs.com/generating-provenance-statements
 - GitHub supply chain security: https://github.blog/security/supply-chain-security/
 - SLSA: https://slsa.dev/spec/v1.0/
 - OpenSSF Scorecard: https://github.com/ossf/scorecard

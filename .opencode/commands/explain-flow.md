@@ -1,16 +1,16 @@
 ---
-description: Explica un flujo usando open-context-map
+description: Explain a flow using open-context-map
 agent: context-first
 subtask: true
 ---
 
-Quiero entender el flujo que empieza en `$ARGUMENTS`.
+I want to understand the flow that starts at `$ARGUMENTS`.
 
-Usa el MCP `open-context-map` para trazar el flujo, revisar callers/callees si hace falta y explicarlo para una persona principiante.
+Use the `open-context-map` MCP to trace the flow, inspect callers and callees if needed, and explain it for a beginner.
 
-Entrega final:
+Final output:
 
-- simbolo inicial
-- pasos principales del flujo
-- archivos importantes
-- huecos que todavia hay que verificar en codigo real
+- starting symbol
+- main flow steps
+- important files
+- gaps that still need to be verified in real code

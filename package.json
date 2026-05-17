@@ -4,6 +4,7 @@
   "description": "Mapa local de contexto de codigo con CLI y MCP para opencode.",
   "type": "module",
   "private": false,
+  "packageManager": "pnpm@10.33.0",
   "bin": {
     "open-context-map": "./src/cli.js"
   },
@@ -16,8 +17,8 @@
   "scripts": {
     "test": "node --test",
     "validate:interest-lab": "node scripts/validate-interest-lab.mjs",
-    "audit": "npm audit --audit-level=moderate",
-    "check": "npm test && npm audit --audit-level=moderate"
+    "audit": "pnpm audit --audit-level moderate",
+    "check": "pnpm test && pnpm audit --audit-level moderate"
   },
   "engines": {
     "node": ">=20"

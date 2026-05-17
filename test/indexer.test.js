@@ -225,3 +225,51 @@ test("init configures opencode and creates the initial index", async () => {
   const gitignore = await readFile(path.join(repo, ".gitignore"), "utf8")
   assert.ok(gitignore.includes(".open-context-map/"))
 })
+
+test("init uses pnpm by default", async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), "open-context-map-test-"))
+  await writeFile(path.join(repo, "app.js"), "function start() { return true }\n")
+
+  const result = await initProject(repo)
+  assert.equal(result.ok, true)
+  assert.deepEqual(result.command, ["pnpm", "dlx", "open-context-map@0.1.0", "mcp", "."])
+
+  const config = JSON.parse(await readFile(path.join(repo, "opencode.json"), "utf8"))
+  assert.deepEqual(config.mcp["open-context-map"].command, ["pnpm", "dlx", "open-context-map@0.1.0", "mcp", "."])
+})
+
+test("init rejects unexpected pnpm package specs", async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), "open-context-map-test-"))
+  await writeFile(path.join(repo, "app.js"), "function start() { return true }\n")
+
+  await assert.rejects(
+    () => initProject(repo, { packageSpec: "evil-package" }),
+    /open-context-map o open-context-map@version/,
+  )
+})
+
+test("redacts secret-like snippets before storing them in the graph", async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), "open-context-map-test-"))
+  await writeFile(
+    path.join(repo, "app.js"),
+    `function login(apiKey = "ghp_123456789012345678901234567890123456") {
+  return send("Bearer github_pat_abcdefghijklmnopqrstuvwxyz")
+}
+
+function send(value) {
+  return value
+}
+`,
+  )
+
+  const graph = await indexRepository(repo, { write: false })
+  const login = searchGraph(graph, "login", 5).find((item) => item.node.name === "login")
+  const callees = getCallees(graph, "login")
+  const serialized = JSON.stringify(graph)
+
+  assert.ok(login)
+  assert.match(login.node.signature, /apiKey = "\[redacted\]"/)
+  assert.ok(callees.some((item) => item.edge.detail.includes("Bearer [redacted]")))
+  assert.ok(!serialized.includes("ghp_123456789012345678901234567890123456"))
+  assert.ok(!serialized.includes("github_pat_abcdefghijklmnopqrstuvwxyz"))
+})

@@ -1,169 +1,169 @@
 # open-context-map
 
-`open-context-map` crea un mapa local del codigo y lo expone por MCP para `opencode`.
+`open-context-map` builds a local code map and exposes it over MCP for `opencode`.
 
-La idea es simple:
+The idea is simple:
 
-- primero se lee el repositorio como texto
-- despues se detectan archivos, clases, funciones, metodos e importaciones simples
-- luego se guardan relaciones utiles, por ejemplo quien llama a quien
-- al final `opencode` puede pedir ese contexto antes de editar codigo
+- first, it reads the repository as text
+- then, it detects files, classes, functions, methods, and simple imports
+- next, it stores useful relationships, for example who calls what
+- finally, `opencode` can ask for that context before editing code
 
-El motor esta hecho con **Node.js puro** y **sin dependencias runtime externas**.
+The engine is built with **plain Node.js** and **no external runtime dependencies**.
 
-Eso reduce mucho el riesgo inicial de supply chain en NPM.
+That significantly reduces the initial supply chain risk in the JavaScript ecosystem.
 
-## Que hace
+## What it does
 
-- crea un indice local en `.open-context-map/index.json`
-- busca simbolos y archivos relacionados
-- calcula callers, callees y flujos simples
-- analiza el impacto de cambiar un simbolo: que otros lo llaman directa o indirectamente
-- arma paquetes de contexto para `bug`, `refactor`, `feature` y `general`
-- cuando preguntas por una clase, intenta iniciar el flujo en el metodo mas util
-- expone herramientas MCP para `opencode`
-- incluye ejemplos reales de `skills`, `commands` y `agents` para `opencode`
-- mientras el MCP esta activo, actualiza el indice en segundo plano cuando cambian archivos
+- creates a local index in `.open-context-map/index.json`
+- searches for related symbols and files
+- computes callers, callees, and simple flows
+- analyzes the impact of changing a symbol: what other pieces depend on it directly or indirectly
+- builds context packs for `bug`, `refactor`, `feature`, and `general`
+- when you ask about a class, it tries to start the flow from the most useful method
+- exposes MCP tools for `opencode`
+- includes real examples of `skills`, `commands`, and `agents` for `opencode`
+- while MCP is active, it updates the index in the background when files change
 
-## Como intenta pensar el problema
+## How it approaches the problem
 
-La herramienta intenta ayudarte como lo hace una persona cuando quiere entender una feature o un bug:
+The tool tries to help the same way a person does when they want to understand a feature or a bug:
 
-- si conoces una clase o función, puedes mirar quien la llama y seguir el camino hacia atrás hasta el origen
-- si ya estas en la pieza objetivo, puedes mirar que llama despues y seguir el flujo hacia adelante hasta el final
-- si vas a cambiar algo, puedes revisar el impacto para ver que otras piezas dependen de eso
+- if you know a class or function, you can see who calls it and trace the path backward to the flow origin
+- if you are already at the target piece, you can see what it calls next and follow the flow forward to the end
+- if you are about to change something, you can review the impact to see what other pieces depend on it
 
-## Que no hace todavia
+## What it does not do yet
 
-- no intenta reemplazar el LSP de tu editor: se enfoca en darte contexto estructural rapido y puede convivir con un LSP real
-- no resuelve todos los casos dinamicos de cada lenguaje
-- no necesita embeddings para seguir relaciones estructurales principales
-- no requiere una base de datos externa o avanzada: guarda un indice local simple para que instalar y desinstalar sea facil
+- it does not try to replace your editor's LSP: it focuses on giving you fast structural context and can coexist with a real LSP
+- it does not resolve every dynamic language-specific case
+- it does not need embeddings to follow the main structural relationships
+- it does not require an external or advanced database: it stores a simple local index so install and uninstall stay easy
 
-El parser todavia es simple, pero el flujo de instalacion, desinstalacion y actualizacion automatica ya esta pensado para uso real.
+The parser is still simple, but the install, uninstall, and automatic update flow is already designed for real usage.
 
-## Requisitos
+## Requirements
 
-- Node.js 20 o superior
-- npm
-- `opencode` si quieres probar la integracion MCP
+- Node.js 20 or newer
+- pnpm
+- `opencode` if you want to try the MCP integration
 
-## Instalacion en un proyecto
+## Install in a project
 
-La idea para una persona usuaria es que no copie carpetas ni scripts a mano.
+The intended experience is that a user does not copy folders or scripts by hand.
 
-Cuando el paquete este publicado, desde la raiz de cualquier proyecto que use `opencode` bastara con:
+Once the package is published, from the root of any project that uses `opencode` it will be enough to run:
 
 ```bash
-npx -y open-context-map@0.1.0 init .
+pnpm dlx open-context-map@0.1.0 init .
 ```
 
-Ese comando prepara:
+That command prepares:
 
-- `opencode.json` con un MCP local llamado `open-context-map`
+- `opencode.json` with a local MCP called `open-context-map`
 - `.opencode/skills/open-context-map-first/SKILL.md`
 - `.opencode/commands/bug-context.md`
 - `.opencode/commands/explain-flow.md`
 - `.opencode/agents/context-first.md`
-- `.gitignore` con `.open-context-map/`
-- `.open-context-map/index.json` como indice local
+- `.gitignore` with `.open-context-map/`
+- `.open-context-map/index.json` as a local index
 
-Despues de correr `init`, cierra y vuelve a abrir `opencode` en ese proyecto. Desde ese momento la herramienta queda disponible y el MCP mantiene el indice al dia de forma automatica mientras trabajas.
+After running `init`, close and reopen `opencode` in that project. From that point on, the tool is available and the MCP keeps the index up to date automatically while you work.
 
-### Desinstalar
+### Uninstall
 
-Para quitar `open-context-map` de un proyecto:
+To remove `open-context-map` from a project:
 
 ```bash
-npx -y open-context-map@0.1.0 uninstall .
+pnpm dlx open-context-map@0.1.0 uninstall .
 ```
 
-Ese comando limpia:
+That command cleans up:
 
-- el directorio `.open-context-map/`
-- la entrada MCP en `opencode.json`
-- los archivos `.opencode/` que genero `init`
-- la entrada `.open-context-map/` del `.gitignore`
+- the `.open-context-map/` directory
+- the MCP entry in `opencode.json`
+- the `.opencode/` files generated by `init`
+- the `.open-context-map/` entry in `.gitignore`
 
-## Comandos principales
+## Main commands
 
-Crear indice:
+Create an index:
 
 ```bash
 open-context-map index .
 ```
 
-Buscar simbolos o archivos:
+Search for symbols or files:
 
 ```bash
 open-context-map search "InterestCalculator"
 ```
 
-Ver quien llama a un simbolo:
+See who calls a symbol:
 
 ```bash
 open-context-map callers "calculateSimpleInterest"
 ```
 
-Ver que llama un simbolo:
+See what a symbol calls:
 
 ```bash
 open-context-map callees "calculateSchedule"
 ```
 
-Seguir un flujo hacia adelante:
+Trace a flow forward:
 
 ```bash
 open-context-map trace "InterestReportService.buildAnnualReport" --depth 4
 ```
 
-Analizar el impacto de cambiar un simbolo:
+Analyze the impact of changing a symbol:
 
 ```bash
 open-context-map impact "calculateSimpleInterest" --depth 4
 ```
 
-Crear un paquete de contexto:
+Build a context pack:
 
 ```bash
 open-context-map context "InterestController" --type feature
 ```
 
-Tipos disponibles:
+Available types:
 
 - `bug`
 - `refactor`
 - `feature`
 - `general`
 
-Desinstalar del proyecto actual:
+Uninstall from the current project:
 
 ```bash
 open-context-map uninstall .
 ```
 
-## Usar con opencode
+## Use with opencode
 
-`opencode` reconoce configuracion por proyecto en `opencode.json` y tambien carga archivos dentro de `.opencode/`.
+`opencode` recognizes project configuration in `opencode.json` and also loads files inside `.opencode/`.
 
-`open-context-map init` usa ese mecanismo oficial y registra un MCP local llamado `open-context-map`.
+`open-context-map init` uses that official mechanism and registers a local MCP called `open-context-map`.
 
-Tambien incluye:
+It also includes:
 
 - skill: `.opencode/skills/open-context-map-first/SKILL.md`
-- commands: `.opencode/commands/bug-context.md` y `.opencode/commands/explain-flow.md`
+- commands: `.opencode/commands/bug-context.md` and `.opencode/commands/explain-flow.md`
 - subagent: `.opencode/agents/context-first.md`
 
-## Indexacion automatica
+## Automatic indexing
 
-No hace falta correr un servicio aparte.
+There is no need to run a separate service.
 
-- `init` deja el proyecto listo
-- el servidor MCP arranca un watcher nativo
-- cuando cambias archivos, se reindexan solo los archivos afectados
-- el indice sigue guardado de forma local en `.open-context-map/index.json`
+- `init` leaves the project ready
+- the MCP server starts a native watcher
+- when you change files, only affected files are reindexed
+- the index stays local in `.open-context-map/index.json`
 
-## Herramientas MCP
+## MCP tools
 
 - `index_repo`
 - `search_code_graph`
@@ -174,54 +174,65 @@ No hace falta correr un servicio aparte.
 - `analyze_impact`
 - `build_context_pack`
 
-## Seguridad
+## Security
 
-Decisiones importantes:
+Important decisions:
 
-- sin dependencias runtime externas
-- no ejecuta codigo del repositorio analizado
-- solo lee extensiones permitidas
-- ignora carpetas pesadas o peligrosas
-- limita el tamano de archivo
-- limita profundidad de trazas y cantidad de resultados
-- valida tipos de contexto conocidos
-- restringe rutas fuera del repo configurado
-- guarda el indice local en `.open-context-map/`
+- no external runtime dependencies
+- it does not execute code from the analyzed repository
+- it only reads allowed extensions
+- it ignores heavy or risky directories
+- it limits file size
+- it limits trace depth and result count
+- it validates known context types
+- it restricts paths outside the configured repository
+- it redacts common secret patterns before storing signatures and details in the local index
+- it compacts signatures and details to reduce noise and save tokens in MCP responses
+- it stores the local index in `.open-context-map/`
 
-La integracion de `opencode` se reviso contra repositorios publicos y fuentes conocidas del ecosistema:
+Important for client projects and PR review:
 
-- `anomalyco/opencode` en GitHub, sobre todo su `README`
-- `Kilo-Org/kilocode`, que mantiene el esquema de configuracion usado por `opencode` para MCP, skills, commands y agents
-- `charmbracelet/crush`, como referencia del formato abierto de skills y agentes en herramientas cercanas del ecosistema
+- `opencode.json` and `.opencode/` are project configuration and must be treated as trusted code
+- if you review an untrusted branch or PR, open `opencode` with `OPENCODE_DISABLE_PROJECT_CONFIG=1`
+- avoid workflows that execute untrusted PRs with `pull_request_target`
+- this repository's GitHub Actions workflows use SHA-pinned actions and automated dependency review on PRs
 
-Lee tambien:
+The `opencode` integration was reviewed against public repositories and known ecosystem sources:
+
+- `anomalyco/opencode` on GitHub, especially its `README`
+- `Kilo-Org/kilocode`, which maintains the configuration schema used by `opencode` for MCP, skills, commands, and agents
+- `charmbracelet/crush`, as a reference for the open skill and agent format in nearby tools
+
+Also read:
 
 - `docs/MANUAL_BEGINNER.md`
 - `docs/SECURITY_BEGINNER.md`
+- `docs/GITHUB_SECURITY_SETUP_BEGINNER.md`
 - `docs/HOW_IT_WAS_BUILT.md`
 - `docs/OPENCODE_ALIGNMENT.md`
+- `SECURITY.md`
 
-## Verificacion
+## Verification
 
-Ejecuta:
+Run:
 
 ```bash
-npm run check
+pnpm run check
 ```
 
-Eso corre:
+That runs:
 
-- pruebas automaticas
-- `npm audit --audit-level=moderate`
+- automated tests
+- `pnpm audit --audit-level moderate`
 
-## Estado del proyecto
+## Project status
 
-El objetivo de esta version es validar este flujo:
+The goal of this version is to validate this flow:
 
-1. crear un mapa local del codigo
-2. consultarlo desde CLI
-3. exponerlo por MCP
-4. usarlo desde `opencode` antes de editar codigo
-5. analizar el impacto de cambiar un simbolo
+1. build a local code map
+2. query it from the CLI
+3. expose it through MCP
+4. use it from `opencode` before editing code
+5. analyze the impact of changing a symbol
 
-La base de este enfoque coincide con estudios sobre comprension de programas y cambio de codigo: Weiser (program slicing, IEEE TSE 1984), LaToza/Venolia/DeLine (mental models, ICSE 2006), Maalej et al. (TOSEM 2014) y RepoCoder (EMNLP 2023).
+The foundation of this approach matches established work on program comprehension and code change: Weiser (program slicing, IEEE TSE 1984), LaToza/Venolia/DeLine (mental models, ICSE 2006), Maalej et al. (TOSEM 2014), and RepoCoder (EMNLP 2023).

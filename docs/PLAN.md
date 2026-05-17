@@ -1,111 +1,111 @@
-# Plan del proyecto
+# Project plan
 
-Este documento explica el plan con lenguaje simple.
+This document explains the plan in simple language.
 
-## Problema
+## Problem
 
-Cuando una IA o una persona cambia codigo, no alcanza con leer un solo archivo.
+When an AI or a person changes code, reading a single file is not enough.
 
-Hace falta entender:
+You need to understand:
 
-- donde empieza un flujo
-- quien llama a quien
-- que archivos estan relacionados
-- que pruebas podrian romperse
-- que pasa si cambio una pieza: que otros dependen de ella
+- where a flow starts
+- who calls what
+- which files are related
+- which tests might break
+- what happens if one piece changes: what depends on it
 
-## Objetivo
+## Goal
 
-Crear una herramienta local que arme un mapa estructural del codigo antes de editar.
+Build a local tool that creates a structural code map before editing.
 
-Ese mapa debe poder consultarse desde terminal y tambien desde `opencode` por MCP.
+That map should be queryable from the terminal and also from `opencode` through MCP.
 
-El LLM no deberia descubrir la arquitectura leyendo texto lineal.
+The LLM should not have to discover the architecture by reading linear text.
 
-El sistema deberia entregarle el camino relevante, el impacto y las relaciones reales.
+The system should provide the relevant path, the impact, and the real relationships.
 
-Tambien debe dejar claro dos recorridos mentales muy comunes:
+It should also make two common mental paths explicit:
 
-- ir hacia atrás desde una pieza para encontrar el origen del flujo
-- ir hacia adelante desde una pieza para entender todo lo que desencadena
+- go backward from a piece to find the origin of the flow
+- go forward from a piece to understand everything it triggers
 
-## Lo que ya esta implementado
+## What is already implemented
 
-### Base del motor
+### Engine base
 
-- proyecto Node.js minimalista
-- sin dependencias runtime externas
-- CLI local
-- servidor MCP
+- minimal Node.js project
+- no external runtime dependencies
+- local CLI
+- MCP server
 
-### Mapa local
+### Local map
 
-- nodos para archivos y simbolos
-- relaciones de imports y llamadas
-- indice persistido en `.open-context-map/index.json`
-- reindexacion incremental cuando cambian archivos
+- nodes for files and symbols
+- import and call relationships
+- index persisted in `.open-context-map/index.json`
+- incremental reindexing when files change
 
-### Analisis de grafo
+### Graph analysis
 
-- busqueda de simbolos y archivos
-- callers: quien llama a un simbolo
-- callees: que llama un simbolo
-- trace: flujo hacia adelante desde un simbolo
-- impact: flujo hacia atras, que se rompe si cambio un simbolo
+- symbol and file search
+- callers: who calls a symbol
+- callees: what a symbol calls
+- trace: forward flow from a symbol
+- impact: backward flow, what breaks if a symbol changes
 
-### Integracion con opencode
+### Integration with opencode
 
 - `opencode.json`
-- skill local
-- commands de ejemplo
-- subagent de ejemplo
-- comando `init` para generar todo en un proyecto usuario
-- comando `uninstall` para limpiar todo lo que `init` agrego
-- comportamiento automatico despues de reiniciar `opencode`
+- local skill
+- example commands
+- example subagent
+- `init` command to generate everything in a user project
+- `uninstall` command to clean up everything `init` added
+- automatic behavior after restarting `opencode`
 
-## Proximos pasos recomendados
+## Recommended next steps
 
-### Mejor parser
+### Better parser
 
-Seguir mejorando el parser sin romper el principio de instalacion simple.
+Keep improving the parser without breaking the simple installation principle.
 
-Si algun dia se agrega un parser mas profundo o apoyo de LSP, deberia ser transparente para la persona usuaria y no exigir pasos manuales extra.
+If a deeper parser or LSP support is ever added, it should be transparent to the user and should not require extra manual steps.
 
-### Mejor resolucion de simbolos
+### Better symbol resolution
 
-Resolver mejor metodos con el mismo nombre en clases distintas.
+Resolve methods with the same name in different classes more accurately.
 
-### Deteccion de anomalias arquitectonicas
+### Architectural anomaly detection
 
-Detectar:
+Detect:
 
-- clases con demasiados metodos y demasiadas llamadas salientes
-- simbolos sin callers (dead code)
-- ciclos en el grafo de llamadas
+- classes with too many methods and too many outgoing calls
+- symbols with no callers (dead code)
+- cycles in the call graph
 
-### Publicacion abierta
+### Open publication
 
-Publicar manualmente el paquete cuando este listo, para que el uso sea:
+Publish the package manually when it is ready, so usage becomes:
 
 ```bash
-npx -y open-context-map@0.1.0 init .
+pnpm dlx open-context-map@0.1.0 init .
 ```
 
-### Mejor experiencia en opencode
+### Better opencode experience
 
-Agregar mas commands y agents especializados solo si resuelven casos repetidos reales.
+Add more specialized commands and agents only if they solve real repeated cases.
 
-### Evaluacion
+### Evaluation
 
-Probar el proyecto con varios repos de ejemplo y medir si el contexto que genera realmente ayuda a editar mejor.
+Test the project with several example repositories and measure whether the generated context actually helps editing.
 
-## Base de conocimiento
+## Knowledge base
 
-La idea del proyecto no sale solo de intuicion.
+The project idea does not come from intuition alone.
 
-Se apoya en trabajos conocidos sobre comprension de programas:
+It is supported by known work on program comprehension:
 
-- Weiser (IEEE TSE, 1984): slicing para analizar impacto
-- LaToza, Venolia y DeLine (ICSE, 2006): seguir cadenas de llamadas ayuda a mantener el modelo mental
-- Maalej et al. (TOSEM, 2014): la gente entiende mejor con navegacion estructural que con lectura lineal
-- RepoCoder (EMNLP, 2023): para modelos de IA funciona mejor recuperar contexto estructurado que meter archivos completos
+- Weiser (IEEE TSE, 1984): slicing for impact analysis
+- LaToza, Venolia, and DeLine (ICSE, 2006): following call chains helps maintain the mental model
+- Maalej et al. (TOSEM, 2014): people understand code better with structural navigation than with linear reading
+- RepoCoder (EMNLP, 2023): for AI models, retrieving structured context works better than feeding complete files

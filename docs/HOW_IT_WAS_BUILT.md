@@ -1,111 +1,111 @@
-# Como se hizo
+# How it was built
 
-Este documento explica la implementacion en lenguaje simple.
+This document explains the implementation in simple language.
 
-## Paso 1: nombre y estructura del proyecto
+## Step 1: project name and structure
 
-El nombre elegido fue `open-context-map` porque describe mejor la idea del producto y no aparecio un repositorio publico exacto con ese nombre en GitHub al momento de validar.
+The chosen name was `open-context-map` because it better describes the product idea, and there did not appear to be an exact public GitHub repository with that name when it was validated.
 
-## Paso 2: evitar dependencias runtime externas
+## Step 2: avoid external runtime dependencies
 
-Se uso Node.js con librerias nativas.
+Node.js with built-in libraries was used.
 
-La razon principal fue reducir riesgo de supply chain en esta etapa temprana.
+The main reason was to reduce supply chain risk at this early stage.
 
-## Paso 3: crear controles de seguridad
+## Step 3: create security controls
 
-Archivo principal: `src/security.js`
+Main file: `src/security.js`
 
-Aqui se define:
+This is where the project defines:
 
-- que carpetas ignorar
-- que extensiones leer
-- tamano maximo de archivo
-- rutas seguras dentro del repo
-- ruta del indice local
+- which directories to ignore
+- which extensions to read
+- maximum file size
+- safe paths inside the repo
+- the local index path
 
-## Paso 4: crear parser heuristico
+## Step 4: create a heuristic parser
 
-Archivo principal: `src/parser.js`
+Main file: `src/parser.js`
 
-El parser usa expresiones regulares para detectar:
+The parser uses regular expressions to detect:
 
-- clases
-- funciones
-- metodos
+- classes
+- functions
+- methods
 - imports
-- llamadas
+- calls
 
-Tambien se mejoro para ignorar llamadas falsas dentro de strings y comentarios, porque eso ensuciaba el grafo.
+It was also improved to ignore false calls inside strings and comments, because that was polluting the graph.
 
-Tambien detecta metodos Java sin `public`, `private` o `protected`. Esto importa en pruebas JUnit, porque muchos metodos de test son package-private.
+It also detects Java methods without `public`, `private`, or `protected`. This matters in JUnit tests, because many test methods are package-private.
 
-## Paso 5: crear indexador
+## Step 5: create the indexer
 
-Archivo principal: `src/indexer.js`
+Main file: `src/indexer.js`
 
-El indexador:
+The indexer:
 
-1. recorre archivos fuente
-2. lee texto de forma segura
-3. parsea el contenido
-4. crea nodos y relaciones
-5. guarda `.open-context-map/index.json`
+1. walks source files
+2. reads text safely
+3. parses the content
+4. creates nodes and relationships
+5. stores `.open-context-map/index.json`
 
-El indice vive en JSON local a proposito.
+The index lives in local JSON on purpose.
 
-Asi no hace falta instalar una base de datos externa para empezar a usar la herramienta.
+That way there is no need to install an external database to start using the tool.
 
-## Paso 6: crear consultas de grafo
+## Step 6: create graph queries
 
-Archivo principal: `src/graph.js`
+Main file: `src/graph.js`
 
-Desde ahi salen consultas como:
+This is where queries come from, such as:
 
-- busqueda general
+- general search
 - callers
 - callees
-- flujos
-- analisis de impacto
-- paquetes de contexto
+- flows
+- impact analysis
+- context packs
 
-Cuando una persona pregunta por una clase, el paquete de contexto intenta iniciar el flujo en un metodo real con llamadas salientes. Asi evita quedarse parado solo en el nombre de la clase.
+When a person asks about a class, the context pack tries to start the flow from a real method with outgoing calls. That avoids getting stuck on the class name alone.
 
-El analisis de impacto recorre el grafo hacia atras: dado un simbolo, encuentra todos los que lo llaman directa o indirectamente. Eso responde la pregunta real de un senior: "si cambio esto, que se rompe".
+Impact analysis walks the graph backward: given a symbol, it finds all symbols that call it directly or indirectly. That answers the real senior-engineer question: "if I change this, what breaks".
 
-## Paso 7: crear CLI
+## Step 7: create the CLI
 
-Archivo principal: `src/cli.js`
+Main file: `src/cli.js`
 
-La CLI permite probar todo sin depender todavia de `opencode`.
+The CLI makes it possible to test everything without depending on `opencode` yet.
 
-Tambien se agrego `open-context-map init`, que prepara un proyecto usuario de forma automatica.
+`open-context-map init` was also added, which prepares a user project automatically.
 
-Ese comando genera la configuracion de `opencode`, los archivos `.opencode`, el `.gitignore` y el indice inicial.
+That command generates the `opencode` configuration, the `.opencode` files, the `.gitignore`, and the initial index.
 
-`open-context-map uninstall` hace el proceso inverso: limpia todo lo que `init` agrego.
+`open-context-map uninstall` does the reverse: it cleans up everything that `init` added.
 
-La idea es mantener un flujo de un solo comando para instalar y otro para desinstalar.
+The idea is to keep a one-command flow for install and another one for uninstall.
 
-## Paso 8: mantener el indice actualizado
+## Step 8: keep the index updated
 
-Archivo principal: `src/watcher.js`
+Main file: `src/watcher.js`
 
-Cuando el MCP esta activo, se usa un watcher nativo.
+When MCP is active, a native watcher is used.
 
-Ese watcher vuelve a indexar solo los archivos que cambian.
+That watcher reindexes only the files that changed.
 
-Asi la herramienta se comporta de forma automatica mientras trabajas en el repositorio.
+This lets the tool behave automatically while you work inside the repository.
 
-## Paso 9: crear servidor MCP
+## Step 9: create the MCP server
 
-Archivo principal: `src/mcp-server.js`
+Main file: `src/mcp-server.js`
 
-Ese archivo implementa JSON-RPC por `stdio` para que `opencode` vea las herramientas como MCP local.
+That file implements JSON-RPC over `stdio` so `opencode` can see the tools as a local MCP.
 
-## Paso 10: integrar con opencode
+## Step 10: integrate with opencode
 
-Archivos relevantes:
+Relevant files:
 
 - `opencode.json`
 - `.opencode/skills/open-context-map-first/SKILL.md`
@@ -113,43 +113,43 @@ Archivos relevantes:
 - `.opencode/commands/explain-flow.md`
 - `.opencode/agents/context-first.md`
 
-Esto se ajusto siguiendo la documentacion oficial de:
+This was adjusted by following the official documentation for:
 
 - config
 - skills
 - commands
 - agents
-- mcp servers
+- MCP servers
 
-Tambien se comparo con repositorios publicos del ecosistema para respetar los patrones mas conocidos de `opencode`.
+It was also compared against public ecosystem repositories to respect the most common `opencode` patterns.
 
-Validacion importante de la documentacion oficial de `opencode`:
+Important validation from the official `opencode` documentation:
 
-- `mcp` vive dentro de `opencode.json`
-- un MCP local usa `type: "local"`
-- `command` debe ser una lista de strings
-- `enabled` activa o desactiva el MCP
-- `timeout` se expresa en milisegundos
-- las skills viven en `.opencode/skills/<nombre>/SKILL.md`
-- los commands viven en `.opencode/commands/`
-- los agents viven en `.opencode/agents/`
+- `mcp` lives inside `opencode.json`
+- a local MCP uses `type: "local"`
+- `command` must be a list of strings
+- `enabled` turns the MCP on or off
+- `timeout` is expressed in milliseconds
+- skills live in `.opencode/skills/<name>/SKILL.md`
+- commands live in `.opencode/commands/`
+- agents live in `.opencode/agents/`
 
-La forma objetivo de instalacion sigue el patron oficial de MCP local:
+The target installation format follows the official local MCP pattern:
 
 ```text
-npx -y open-context-map@0.1.0 init .
+pnpm dlx open-context-map@0.1.0 init .
 ```
 
-Y dentro de `opencode.json` queda un MCP local con comando tipo:
+And inside `opencode.json` it leaves a local MCP with a command like:
 
 ```json
-["npx", "-y", "open-context-map@0.1.0", "mcp", "."]
+["pnpm", "dlx", "open-context-map@0.1.0", "mcp", "."]
 ```
 
-## Paso 11: mantener limites honestos
+## Step 11: keep honest limits
 
-El parser sigue siendo heuristico.
+The parser is still heuristic.
 
-Eso significa que no intenta competir con un LSP completo ni con analizadores por lenguaje mucho mas pesados.
+That means it does not try to compete with a full LSP or with much heavier language-specific analyzers.
 
-La meta aqui es otra: dar un mapa util rapido, portable y facil de instalar.
+The goal here is different: provide a useful, fast, portable map that is easy to install.

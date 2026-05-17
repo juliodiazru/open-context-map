@@ -1,18 +1,18 @@
 ---
-description: Crea contexto de bug con open-context-map
+description: Build bug context with open-context-map
 agent: context-first
 subtask: true
 ---
 
-Necesito entender un posible bug alrededor de `$ARGUMENTS`.
+I need to understand a possible bug around `$ARGUMENTS`.
 
-Usa primero el MCP `open-context-map` y crea contexto de tipo `bug`.
+Use the `open-context-map` MCP first and build context of type `bug`.
 
-Entrega final:
+Final output:
 
-- que hace esta pieza
-- donde empieza el flujo
-- quien la llama
-- que llama despues
-- que archivos conviene leer
-- que pruebas parecen relacionadas
+- what this piece does
+- where the flow starts
+- who calls it
+- what it calls next
+- which files are worth reading
+- which tests look related

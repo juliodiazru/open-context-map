@@ -10,8 +10,8 @@ const MCP_NAME = "open-context-map"
 
 export async function initProject(repoPath = process.cwd(), options = {}) {
   const root = safeRepoRoot(repoPath)
-  const source = options.source ?? "npx"
-  const packageSpec = options.packageSpec ?? `${PACKAGE_NAME}@${PACKAGE_VERSION}`
+  const source = options.source ?? "pnpm"
+  const packageSpec = normalizePackageSpec(source, options.packageSpec ?? `${PACKAGE_NAME}@${PACKAGE_VERSION}`)
   const command = mcpCommandFor(source, packageSpec)
 
   await writeOpencodeConfig(root, command)
@@ -98,10 +98,16 @@ async function cleanGitignore(root) {
 }
 
 function mcpCommandFor(source, packageSpec) {
-  if (source === "npx") return ["npx", "-y", packageSpec, "mcp", "."]
+  if (source === "pnpm") return ["pnpm", "dlx", packageSpec, "mcp", "."]
   if (source === "global") return [PACKAGE_NAME, "mcp", "."]
   if (source === "local") return [process.execPath, localCliPath(), "mcp", "."]
-  throw new Error(`Fuente de instalacion no soportada: ${source}. Usa npx, global o local.`)
+  throw new Error(`Fuente de instalacion no soportada: ${source}. Usa pnpm, global o local.`)
+}
+
+function normalizePackageSpec(source, packageSpec) {
+  if (source !== "pnpm") return packageSpec
+  if (/^open-context-map(?:@[A-Za-z0-9][A-Za-z0-9._-]*)?$/.test(packageSpec)) return packageSpec
+  throw new Error("El valor de --package debe ser open-context-map o open-context-map@version para evitar ejecutar paquetes inesperados.")
 }
 
 function localCliPath() {
