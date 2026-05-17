@@ -1,28 +1,28 @@
-# Alineacion con opencode
+# Alignment with opencode
 
-Este documento explica por que `open-context-map` sigue la linea de `opencode` y buenas practicas publicas del ecosistema.
+This document explains why `open-context-map` follows the direction of `opencode` and public best practices from the ecosystem.
 
-## Que se reviso
+## What was reviewed
 
-Se revisaron repositorios publicos y conocidos para confirmar el formato:
+Known public repositories were reviewed to confirm the format:
 
-- `anomalyco/opencode` en GitHub, sobre todo su `README`, porque es la referencia publica mas visible del producto
-- `Kilo-Org/kilocode`, en especial `packages/opencode/src/config/`, porque ahi esta el esquema que valida `mcp`, `watcher`, `commands` y `agents`
-- `Kilo-Org/kilocode/packages/opencode/test/skill/skill.test.ts`, para confirmar la carga de skills desde `.opencode/skills/`
-- `charmbracelet/crush`, como referencia cercana del formato abierto de skills y agentes
+- `anomalyco/opencode` on GitHub, especially its `README`, because it is the most visible public reference for the product
+- `Kilo-Org/kilocode`, especially `packages/opencode/src/config/`, because that is where the schema that validates `mcp`, `watcher`, `commands`, and `agents` lives
+- `Kilo-Org/kilocode/packages/opencode/test/skill/skill.test.ts`, to confirm how skills are loaded from `.opencode/skills/`
+- `charmbracelet/crush`, as a nearby reference for the open skill and agent format
 
-## Como queda alineado
+## How it stays aligned
 
-`open-context-map init` crea un `opencode.json` con un MCP local.
+`open-context-map init` creates an `opencode.json` with a local MCP.
 
-Eso sigue la forma oficial:
+That follows the official shape:
 
 ```json
 {
   "mcp": {
     "open-context-map": {
       "type": "local",
-      "command": ["node", "src/cli.js", "mcp", "."],
+      "command": ["pnpm", "dlx", "open-context-map@0.1.0", "mcp", "."],
       "enabled": true,
       "timeout": 15000
     }
@@ -30,67 +30,67 @@ Eso sigue la forma oficial:
 }
 ```
 
-Puntos importantes:
+Important points:
 
-- `type` es `local`
-- `command` es una lista de textos
-- `enabled` activa el MCP
-- `timeout` evita esperas largas
-- `watcher.ignore` evita ruido del indice y carpetas pesadas
-- `.opencode/skills/`, `.opencode/commands/` y `.opencode/agents/` usan las rutas que `opencode` ya conoce
+- `type` is `local`
+- `command` is a list of strings
+- `enabled` turns the MCP on
+- `timeout` avoids long waits
+- `watcher.ignore` avoids index noise and heavy directories
+- `.opencode/skills/`, `.opencode/commands/`, and `.opencode/agents/` use the paths that `opencode` already knows
 
-## Buenas practicas que se respetan
+## Best practices it respects
 
-- un solo archivo `opencode.json` por proyecto
-- un MCP local con comando simple y portable
-- archivos de `skills`, `commands` y `agents` dentro de `.opencode/`
-- instrucciones cortas y enfocadas para que el agente pida contexto antes de editar
-- instalacion y desinstalacion con un solo comando
-- comportamiento automatico despues de reiniciar `opencode`
+- a single `opencode.json` file per project
+- a local MCP with a simple, portable command
+- `skills`, `commands`, and `agents` files inside `.opencode/`
+- short, focused instructions so the agent asks for context before editing
+- installation and uninstallation with a single command
+- automatic behavior after restarting `opencode`
 
-## Como se ve en la practica
+## What it looks like in practice
 
-`open-context-map init` deja listo el proyecto para que la persona usuaria no tenga que copiar archivos a mano.
+`open-context-map init` leaves the project ready so the user does not need to copy files manually.
 
-Despues:
+After that:
 
-- `opencode` carga el MCP local
-- `opencode` ve la skill, los commands y el subagent
-- el servidor MCP arranca el watcher nativo
-- la indexacion incremental mantiene actualizado el mapa mientras trabajas
+- `opencode` loads the local MCP
+- `opencode` sees the skill, commands, and subagent
+- the MCP server starts the native watcher
+- incremental indexing keeps the map updated while you work
 
-## Por que esto ayuda al problema original
+## Why this helps with the original problem
 
-El problema original dice que un LLM suele leer texto lineal y pierde el mapa mental del sistema.
+The original problem says that an LLM often reads linear text and loses the system's mental map.
 
-Esta herramienta intenta reducir ese problema creando un grafo simple antes de editar.
+This tool tries to reduce that problem by creating a simple graph before editing.
 
-En vez de mandar todo el repo al agente, entrega:
+Instead of sending the whole repo to the agent, it provides:
 
-- simbolos principales
-- archivos importantes
-- quien llama a quien
-- que se llama despues
-- flujo probable
-- pruebas relacionadas
+- main symbols
+- important files
+- who calls what
+- what gets called next
+- likely flow
+- related tests
 
-## Limites honestos
+## Honest limits
 
-Esta herramienta no compite con el LSP del editor.
+This tool does not compete with the editor's LSP.
 
-El LSP sirve muy bien para autocompletado, navegacion del editor y diagnosticos por lenguaje.
+The LSP is great for autocomplete, editor navigation, and language diagnostics.
 
-`open-context-map` resuelve otro problema: dar un mapa local del repositorio, con callers, callees, impacto y flujo, sin obligarte a instalar una base de datos externa ni servicios extra.
+`open-context-map` solves a different problem: give you a local repository map, with callers, callees, impact, and flow, without forcing you to install an external database or extra services.
 
-El grafo es una ayuda, no una verdad absoluta.
+The graph is a helper, not an absolute truth.
 
-Por eso la skill generada le dice al agente que use el mapa primero, pero que luego lea los archivos reales antes de editar.
+That is why the generated skill tells the agent to use the map first, but then read the real files before editing.
 
-## Base de conocimiento
+## Knowledge base
 
-Tambien se revisaron estudios conocidos sobre comprension de codigo para no prometer cosas irreales:
+Known studies on code comprehension were also reviewed to avoid making unrealistic promises:
 
-- Weiser, *Program Slicing* (IEEE TSE, 1984): respalda mirar impacto hacia atrás
-- LaToza, Venolia y DeLine (ICSE, 2006): respalda seguir callers y callees para entender comportamiento
-- Maalej et al. (TOSEM, 2014): respalda que la gente no entiende repositorios leyendo todo en linea
-- RepoCoder (EMNLP, 2023): respalda entregar contexto estructurado en vez de tirar archivos completos al modelo
+- Weiser, *Program Slicing* (IEEE TSE, 1984): supports looking backward at impact
+- LaToza, Venolia, and DeLine (ICSE, 2006): supports following callers and callees to understand behavior
+- Maalej et al. (TOSEM, 2014): supports the idea that people do not understand repositories by reading everything linearly
+- RepoCoder (EMNLP, 2023): supports providing structured context instead of dumping full files into the model

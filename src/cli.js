@@ -12,7 +12,7 @@ const HELP = `open-context-map - mapa local de contexto para codigo
 Uso:
   open-context-map index [repo]
   open-context-map watch [repo]
-  open-context-map init [repo] [--source npx|global|local] [--package open-context-map@0.1.0] [--no-index]
+  open-context-map init [repo] [--source pnpm|global|local] [--package open-context-map@0.1.0] [--no-index]
   open-context-map uninstall [repo]
   open-context-map search <texto> [repo]
   open-context-map callers <simbolo> [repo]
@@ -59,7 +59,7 @@ async function main() {
     const parsedInit = parseTail([firstArg, ...tail].filter(Boolean))
     const repo = parsedInit.positionals[0] ?? "."
     const result = await initProject(repo, {
-      source: parsedInit.flags.source ?? "npx",
+      source: parsedInit.flags.source ?? "pnpm",
       packageSpec: parsedInit.flags.package ?? undefined,
       writeIndex: parsedInit.flags["no-index"] !== true,
     })

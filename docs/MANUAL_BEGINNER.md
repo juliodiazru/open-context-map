@@ -1,189 +1,189 @@
-# Manual para principiantes
+# Beginner manual
 
-Este manual explica el proyecto paso a paso, sin asumir experiencia avanzada.
+This manual explains the project step by step, without assuming advanced experience.
 
-## Que es open-context-map
+## What open-context-map is
 
-Es una herramienta que crea un mapa de tu codigo.
+It is a tool that creates a map of your code.
 
-Ese mapa ayuda a una IA o a una persona a entender mejor el proyecto antes de cambiar archivos.
+That map helps an AI or a person understand the project better before changing files.
 
-## Palabras importantes
+## Important words
 
-**Repositorio**: carpeta donde vive un proyecto.
+**Repository**: the folder where a project lives.
 
-**Indice**: archivo que guarda el mapa ya procesado.
+**Index**: the file that stores the processed map.
 
-**Nodo**: una pieza del mapa. Puede ser un archivo, una clase o una funcion.
+**Node**: one piece of the map. It can be a file, a class, or a function.
 
-**Relacion**: conexion entre nodos. Por ejemplo: una funcion llama a otra.
+**Relationship**: a connection between nodes. For example: one function calls another.
 
-**Grafo**: conjunto completo de nodos y relaciones.
+**Graph**: the full set of nodes and relationships.
 
-**MCP**: forma estandar para que una IA use herramientas externas.
+**MCP**: the standard way for an AI to use external tools.
 
-**opencode**: la herramienta donde un agente puede usar este MCP.
+**opencode**: the tool where an agent can use this MCP.
 
-## Paso 1: entrar a la carpeta del proyecto
-
-```bash
-cd nombre-de-tu-proyecto
-```
-
-## Paso 2: instalar
+## Step 1: enter the project folder
 
 ```bash
-npm install
+cd your-project-name
 ```
 
-Como el proyecto no tiene dependencias runtime externas, esto debe ser rapido.
-
-## Instalar open-context-map en otro proyecto
-
-La forma pensada para una persona usuaria es un solo comando:
+## Step 2: install
 
 ```bash
-npx -y open-context-map@0.1.0 init .
+pnpm install
 ```
 
-Ese comando crea la configuracion de `opencode`, la skill, los commands, el agent y el indice inicial.
+Because the project has no external runtime dependencies, this should be fast.
 
-La idea es que despues no tengas que hacer pasos extra: reinicias `opencode` y la herramienta queda lista.
+## Install open-context-map in another project
 
-## Desinstalar open-context-map de un proyecto
+The intended user flow is a single command:
 
 ```bash
-npx -y open-context-map@0.1.0 uninstall .
+pnpm dlx open-context-map@0.1.0 init .
 ```
 
-Ese comando limpia todo lo que `init` agrego:
+That command creates the `opencode` configuration, the skill, the commands, the agent, and the initial index.
 
-- el directorio `.open-context-map/`
-- la entrada MCP en `opencode.json`
-- los archivos `.opencode/` generados
-- la entrada del `.gitignore`
+The idea is that afterward you should not need extra manual steps: restart `opencode` and the tool is ready.
 
-## Paso 3: crear o actualizar el mapa
+## Uninstall open-context-map from a project
+
+```bash
+pnpm dlx open-context-map@0.1.0 uninstall .
+```
+
+That command cleans up everything `init` added:
+
+- the `.open-context-map/` directory
+- the MCP entry in `opencode.json`
+- the generated `.opencode/` files
+- the `.gitignore` entry
+
+## Step 3: create or update the map
 
 ```bash
 open-context-map index .
 ```
 
-El punto `.` significa: `usa esta carpeta actual`.
+The dot `.` means: `use this current folder`.
 
-Ese comando crea:
+That command creates:
 
 ```text
 .open-context-map/index.json
 ```
 
-## Paso 4: buscar algo
+## Step 4: search for something
 
 ```bash
 open-context-map search "indexRepository"
 ```
 
-Esto sirve para encontrar una clase, una funcion o un archivo relacionado con ese texto.
+This is useful for finding a class, a function, or a file related to that text.
 
-## Paso 5: ver quien llama a una funcion
+## Step 5: see who calls a function
 
 ```bash
 open-context-map callers "indexRepository"
 ```
 
-Piensalo asi: `quien usa esto`.
+Think of it as: `who uses this`.
 
-## Paso 6: ver que llama una funcion
+## Step 6: see what a function calls
 
 ```bash
 open-context-map callees "indexRepository"
 ```
 
-Piensalo asi: `que hace esto despues`.
+Think of it as: `what does this do next`.
 
-## Paso 7: seguir un flujo hacia adelante
+## Step 7: follow a flow forward
 
 ```bash
 open-context-map trace "indexRepository" --depth 3
 ```
 
-Esto intenta seguir la cadena de llamadas varios pasos hacia adelante.
+This tries to follow the call chain several steps forward.
 
-## Paso 8: analizar el impacto de cambiar un simbolo
+## Step 8: analyze the impact of changing a symbol
 
 ```bash
 open-context-map impact "indexRepository" --depth 3
 ```
 
-Piensalo asi: `si cambio esto, que se rompe`.
+Think of it as: `if I change this, what breaks`.
 
-El resultado muestra todos los simbolos que llaman a `indexRepository` directa o indirectamente.
+The result shows all symbols that call `indexRepository` directly or indirectly.
 
-## Paso 9: crear contexto para una tarea
+## Step 9: build context for a task
 
-Para un bug:
+For a bug:
 
 ```bash
 open-context-map context "indexRepository" --type bug
 ```
 
-Para un refactor:
+For a refactor:
 
 ```bash
 open-context-map context "indexRepository" --type refactor
 ```
 
-Para una feature:
+For a feature:
 
 ```bash
 open-context-map context "indexRepository" --type feature
 ```
 
-Cuando preguntas por una clase, la herramienta intenta buscar el metodo mas util para empezar el flujo.
+When you ask about a class, the tool tries to find the most useful method to start the flow.
 
-## Paso 10: usarlo con opencode
+## Step 10: use it with opencode
 
-1. Instala en tu proyecto con `init`.
-2. Abre o reinicia `opencode` en ese proyecto.
-3. Pide algo como: `usa open-context-map para explicar el flujo de indexRepository`.
+1. Install it in your project with `init`.
+2. Open or restart `opencode` in that project.
+3. Ask for something like: `use open-context-map to explain the flow of indexRepository`.
 
-Mientras el MCP esta activo, el indice se actualiza solo cuando cambias archivos. No necesitas levantar otra herramienta ni una base de datos externa.
+While MCP is active, the index updates automatically when files change. You do not need to run another tool or an external database.
 
-## Comandos utiles de opencode incluidos en el proyecto
+## Useful opencode commands included in the project
 
-En el motor hay ejemplos reales de configuracion:
+The engine includes real configuration examples:
 
-- skill: usar primero el mapa antes de editar
+- skill: use the map first before editing
 - command `/bug-context`
 - command `/explain-flow`
 - subagent `context-first`
 
-En un proyecto usuario esos archivos no se copian manualmente: los genera `open-context-map init`.
+In a user project, those files are not copied manually: `open-context-map init` generates them.
 
-## Si algo falla
+## If something fails
 
-1. Vuelve a crear el indice.
+1. Rebuild the index.
 
 ```bash
 open-context-map index .
 ```
 
-2. Prueba una busqueda simple.
+2. Try a simple search.
 
 ```bash
 open-context-map search "indexRepository"
 ```
 
-3. Ejecuta las pruebas.
+3. Run the tests.
 
 ```bash
-npm test
+pnpm test
 ```
 
-4. Si cambiaste `opencode.json`, cierra y vuelve a abrir `opencode`.
+4. If you changed `opencode.json`, close and reopen `opencode`.
 
-## Idea importante
+## Important idea
 
-`open-context-map` no intenta reemplazar el LSP de tu editor.
+`open-context-map` does not try to replace your editor's LSP.
 
-Su trabajo es otro: darte un mapa sencillo del repositorio para entender de donde viene un flujo, a quien impacta un cambio y que piezas conviene leer primero.
+Its job is different: give you a simple repository map so you can understand where a flow comes from, what a change impacts, and which pieces are worth reading first.
