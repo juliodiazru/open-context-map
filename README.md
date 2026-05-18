@@ -1,6 +1,6 @@
-# open-context-map
+# @juliodiazru/open-context-map
 
-`open-context-map` builds a local code map and exposes it over MCP for `opencode`.
+`@juliodiazru/open-context-map` builds a local code map and exposes it over MCP for `opencode`.
 
 The idea is simple:
 
@@ -55,7 +55,7 @@ The intended experience is that a user does not copy folders or scripts by hand.
 Once the package is published, from the root of any project that uses `opencode` it will be enough to run:
 
 ```bash
-pnpm dlx open-context-map@0.1.0 init .
+pnpm dlx @juliodiazru/open-context-map@0.1.0 init .
 ```
 
 That command prepares:
@@ -72,10 +72,10 @@ After running `init`, close and reopen `opencode` in that project. From that poi
 
 ### Uninstall
 
-To remove `open-context-map` from a project:
+To remove `@juliodiazru/open-context-map` from a project:
 
 ```bash
-pnpm dlx open-context-map@0.1.0 uninstall .
+pnpm dlx @juliodiazru/open-context-map@0.1.0 uninstall .
 ```
 
 That command cleans up:
