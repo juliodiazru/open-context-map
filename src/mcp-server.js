@@ -39,7 +39,8 @@ class McpStdioServer {
 
   readMessage() {
     const headerEnd = this.buffer.indexOf("\r\n\r\n")
-    if (headerEnd !== -1) {
+    const nextLine = this.buffer.indexOf("\n")
+    if (headerEnd !== -1 && (nextLine === -1 || headerEnd < nextLine || this.buffer.toString("utf8", 0, nextLine).startsWith("Content-Length:"))) {
       const header = this.buffer.slice(0, headerEnd).toString("utf8")
       const match = header.match(/Content-Length:\s*(\d+)/i)
       if (!match) throw new Error("Mensaje MCP sin Content-Length")
@@ -67,7 +68,7 @@ class McpStdioServer {
       this.sendResult(message.id, {
         protocolVersion: PROTOCOL_VERSION,
         capabilities: { tools: {} },
-        serverInfo: { name: "open-context-map", version: "0.1.1" },
+        serverInfo: { name: "open-context-map", version: "0.1.2" },
       })
       return
     }
@@ -140,8 +141,7 @@ class McpStdioServer {
   }
 
   send(payload) {
-    const body = JSON.stringify(payload)
-    process.stdout.write(`Content-Length: ${Buffer.byteLength(body, "utf8")}\r\n\r\n${body}`)
+    process.stdout.write(`${JSON.stringify(payload)}\n`)
   }
 }
 

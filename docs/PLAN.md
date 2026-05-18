@@ -88,7 +88,7 @@ Detect:
 Publish the package manually when it is ready, so usage becomes:
 
 ```bash
-pnpm dlx @juliodiazru/open-context-map@0.1.1 init .
+pnpm dlx @juliodiazru/open-context-map@0.1.2 init .
 ```
 
 ### Better opencode experience

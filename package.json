@@ -1,6 +1,6 @@
 {
   "name": "@juliodiazru/open-context-map",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Local code context map with CLI and MCP support for opencode.",
   "homepage": "https://github.com/juliodiazru/open-context-map#readme",
   "bugs": {
@@ -38,5 +38,8 @@
     "context-engine",
     "repo-map"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "1.27.1"
+  }
 }
