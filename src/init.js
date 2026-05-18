@@ -6,7 +6,7 @@ import { INDEX_DIR, safeRepoRoot } from "./security.js"
 
 const PACKAGE_NAME = "@juliodiazru/open-context-map"
 const GLOBAL_BIN_NAME = "open-context-map"
-const PACKAGE_VERSION = "0.1.1"
+const PACKAGE_VERSION = "0.1.2"
 const MCP_NAME = "open-context-map"
 
 export async function initProject(repoPath = process.cwd(), options = {}) {

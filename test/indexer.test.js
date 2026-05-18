@@ -3,6 +3,9 @@ import assert from "node:assert/strict"
 import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
+import { fileURLToPath } from "node:url"
+import { Client } from "@modelcontextprotocol/sdk/client/index.js"
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { indexRepository } from "../src/indexer.js"
 import { analyzeImpact, buildContextPack, getCallees, getCallers, searchGraph, traceFlow } from "../src/graph.js"
 import { initProject, uninstallProject } from "../src/init.js"
@@ -232,10 +235,10 @@ test("init uses pnpm by default", async () => {
 
   const result = await initProject(repo)
   assert.equal(result.ok, true)
-  assert.deepEqual(result.command, ["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.1", "mcp", "."])
+  assert.deepEqual(result.command, ["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.2", "mcp", "."])
 
   const config = JSON.parse(await readFile(path.join(repo, "opencode.json"), "utf8"))
-  assert.deepEqual(config.mcp["open-context-map"].command, ["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.1", "mcp", "."])
+  assert.deepEqual(config.mcp["open-context-map"].command, ["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.2", "mcp", "."])
 })
 
 test("init rejects unexpected pnpm package specs", async () => {
@@ -272,4 +275,32 @@ function send(value) {
   assert.ok(callees.some((item) => item.edge.detail.includes("Bearer [redacted]")))
   assert.ok(!serialized.includes("ghp_123456789012345678901234567890123456"))
   assert.ok(!serialized.includes("github_pat_abcdefghijklmnopqrstuvwxyz"))
+})
+
+test("mcp server connects with the official SDK over stdio", { timeout: 10000 }, async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), "open-context-map-mcp-"))
+  await writeFile(path.join(repo, "app.js"), "function start() { return done() }\nfunction done() { return true }\n")
+
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: [fileURLToPath(new URL("../src/cli.js", import.meta.url)), "mcp", "."],
+    cwd: repo,
+    stderr: "pipe",
+  })
+
+  const stderr = []
+  transport.stderr?.on("data", (chunk) => {
+    stderr.push(chunk.toString("utf8"))
+  })
+
+  const client = new Client({ name: "open-context-map-test", version: "1.0.0" })
+
+  try {
+    await client.connect(transport, { timeout: 5000 })
+    const tools = await client.listTools({})
+    assert.ok(tools.tools.some((tool) => tool.name === "build_context_pack"), stderr.join(""))
+    assert.ok(tools.tools.some((tool) => tool.name === "trace_flow"), stderr.join(""))
+  } finally {
+    await client.close()
+  }
 })

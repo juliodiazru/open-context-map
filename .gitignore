@@ -2,6 +2,8 @@ node_modules/
 .open-context-map/
 .repo-graph/
 coverage/
+.opencode/package-lock.json
+*.tgz
 .DS_Store
 npm-debug.log*
 *.log

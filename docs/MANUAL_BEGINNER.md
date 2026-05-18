@@ -43,7 +43,7 @@ Because the project has no external runtime dependencies, this should be fast.
 The intended user flow is a single command:
 
 ```bash
-pnpm dlx @juliodiazru/open-context-map@0.1.1 init .
+pnpm dlx @juliodiazru/open-context-map@0.1.2 init .
 ```
 
 That command creates the `opencode` configuration, the skill, the commands, the agent, and the initial index.
@@ -53,7 +53,7 @@ The idea is that afterward you should not need extra manual steps: restart `open
 ## Uninstall @juliodiazru/open-context-map from a project
 
 ```bash
-pnpm dlx @juliodiazru/open-context-map@0.1.1 uninstall .
+pnpm dlx @juliodiazru/open-context-map@0.1.2 uninstall .
 ```
 
 That command cleans up everything `init` added:
