@@ -21,7 +21,7 @@ That does not remove all risk, but it greatly reduces the initial attack surface
 The target install flow is:
 
 ```bash
-pnpm dlx @juliodiazru/open-context-map@0.1.0 init .
+pnpm dlx @juliodiazru/open-context-map@0.1.1 init .
 ```
 
 That follows the official `opencode` pattern for local MCPs with `pnpm dlx` commands, but pinning the version and reviewing the package before adopting it is still recommended.

@@ -52,7 +52,7 @@ async function validateMcp() {
     const initializeResult = await client.request("initialize", {
       protocolVersion: "2024-11-05",
       capabilities: {},
-      clientInfo: { name: "interest-lab-validator", version: "0.1.0" },
+      clientInfo: { name: "interest-lab-validator", version: "0.1.1" },
     })
     assert(initializeResult.serverInfo?.name === "open-context-map", "MCP initialize should identify open-context-map")
 

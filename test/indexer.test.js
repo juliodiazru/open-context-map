@@ -232,10 +232,10 @@ test("init uses pnpm by default", async () => {
 
   const result = await initProject(repo)
   assert.equal(result.ok, true)
-  assert.deepEqual(result.command, ["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.0", "mcp", "."])
+  assert.deepEqual(result.command, ["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.1", "mcp", "."])
 
   const config = JSON.parse(await readFile(path.join(repo, "opencode.json"), "utf8"))
-  assert.deepEqual(config.mcp["open-context-map"].command, ["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.0", "mcp", "."])
+  assert.deepEqual(config.mcp["open-context-map"].command, ["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.1", "mcp", "."])
 })
 
 test("init rejects unexpected pnpm package specs", async () => {

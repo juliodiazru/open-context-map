@@ -137,13 +137,13 @@ Important validation from the official `opencode` documentation:
 The target installation format follows the official local MCP pattern:
 
 ```text
-pnpm dlx @juliodiazru/open-context-map@0.1.0 init .
+pnpm dlx @juliodiazru/open-context-map@0.1.1 init .
 ```
 
 And inside `opencode.json` it leaves a local MCP with a command like:
 
 ```json
-["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.0", "mcp", "."]
+["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.1", "mcp", "."]
 ```
 
 ## Step 11: keep honest limits

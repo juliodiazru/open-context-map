@@ -55,7 +55,7 @@ The intended experience is that a user does not copy folders or scripts by hand.
 Once the package is published, from the root of any project that uses `opencode` it will be enough to run:
 
 ```bash
-pnpm dlx @juliodiazru/open-context-map@0.1.0 init .
+pnpm dlx @juliodiazru/open-context-map@0.1.1 init .
 ```
 
 That command prepares:
@@ -75,7 +75,7 @@ After running `init`, close and reopen `opencode` in that project. From that poi
 To remove `@juliodiazru/open-context-map` from a project:
 
 ```bash
-pnpm dlx @juliodiazru/open-context-map@0.1.0 uninstall .
+pnpm dlx @juliodiazru/open-context-map@0.1.1 uninstall .
 ```
 
 That command cleans up:

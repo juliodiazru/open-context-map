@@ -12,7 +12,7 @@ const HELP = `open-context-map - local code context map
 Usage:
   open-context-map index [repo]
   open-context-map watch [repo]
-  open-context-map init [repo] [--source pnpm|global|local] [--package @juliodiazru/open-context-map@0.1.0] [--no-index]
+  open-context-map init [repo] [--source pnpm|global|local] [--package @juliodiazru/open-context-map@0.1.1] [--no-index]
   open-context-map uninstall [repo]
   open-context-map search <text> [repo]
   open-context-map callers <symbol> [repo]

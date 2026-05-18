@@ -67,7 +67,7 @@ class McpStdioServer {
       this.sendResult(message.id, {
         protocolVersion: PROTOCOL_VERSION,
         capabilities: { tools: {} },
-        serverInfo: { name: "open-context-map", version: "0.1.0" },
+        serverInfo: { name: "open-context-map", version: "0.1.1" },
       })
       return
     }
