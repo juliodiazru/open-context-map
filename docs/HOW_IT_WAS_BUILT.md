@@ -4,7 +4,7 @@ This document explains the implementation in simple language.
 
 ## Step 1: project name and structure
 
-The chosen name was `open-context-map` because it better describes the product idea, and there did not appear to be an exact public GitHub repository with that name when it was validated.
+The chosen published package name is `@juliodiazru/open-context-map`, while the CLI command remains `open-context-map`.
 
 ## Step 2: avoid external runtime dependencies
 
@@ -137,13 +137,13 @@ Important validation from the official `opencode` documentation:
 The target installation format follows the official local MCP pattern:
 
 ```text
-pnpm dlx open-context-map@0.1.0 init .
+pnpm dlx @juliodiazru/open-context-map@0.1.0 init .
 ```
 
 And inside `opencode.json` it leaves a local MCP with a command like:
 
 ```json
-["pnpm", "dlx", "open-context-map@0.1.0", "mcp", "."]
+["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.0", "mcp", "."]
 ```
 
 ## Step 11: keep honest limits

@@ -2,7 +2,7 @@
 
 This manual explains the project step by step, without assuming advanced experience.
 
-## What open-context-map is
+## What @juliodiazru/open-context-map is
 
 It is a tool that creates a map of your code.
 
@@ -38,22 +38,22 @@ pnpm install
 
 Because the project has no external runtime dependencies, this should be fast.
 
-## Install open-context-map in another project
+## Install @juliodiazru/open-context-map in another project
 
 The intended user flow is a single command:
 
 ```bash
-pnpm dlx open-context-map@0.1.0 init .
+pnpm dlx @juliodiazru/open-context-map@0.1.0 init .
 ```
 
 That command creates the `opencode` configuration, the skill, the commands, the agent, and the initial index.
 
 The idea is that afterward you should not need extra manual steps: restart `opencode` and the tool is ready.
 
-## Uninstall open-context-map from a project
+## Uninstall @juliodiazru/open-context-map from a project
 
 ```bash
-pnpm dlx open-context-map@0.1.0 uninstall .
+pnpm dlx @juliodiazru/open-context-map@0.1.0 uninstall .
 ```
 
 That command cleans up everything `init` added:

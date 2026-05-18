@@ -22,7 +22,7 @@ That follows the official shape:
   "mcp": {
     "open-context-map": {
       "type": "local",
-      "command": ["pnpm", "dlx", "open-context-map@0.1.0", "mcp", "."],
+      "command": ["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.0", "mcp", "."],
       "enabled": true,
       "timeout": 15000
     }
