@@ -4,7 +4,8 @@ import { fileURLToPath } from "node:url"
 import { indexRepository } from "./indexer.js"
 import { INDEX_DIR, safeRepoRoot } from "./security.js"
 
-const PACKAGE_NAME = "open-context-map"
+const PACKAGE_NAME = "@juliodiazru/open-context-map"
+const GLOBAL_BIN_NAME = "open-context-map"
 const PACKAGE_VERSION = "0.1.0"
 const MCP_NAME = "open-context-map"
 
@@ -35,7 +36,7 @@ export async function initProject(repoPath = process.cwd(), options = {}) {
     ],
     index: graph ? ".open-context-map/index.json" : null,
     stats: graph?.stats ?? null,
-    nextStep: "Reinicia opencode en este proyecto para que vuelva a cargar opencode.json y los archivos de .opencode.",
+    nextStep: "Restart opencode in this project so it reloads opencode.json and the files under .opencode.",
   }
 }
 
@@ -54,7 +55,7 @@ export async function uninstallProject(repoPath = process.cwd()) {
     ok: true,
     repo: root,
     removed,
-    nextStep: "Reinicia opencode en este proyecto para que vuelva a cargar el opencode.json actualizado.",
+    nextStep: "Restart opencode in this project so it reloads the updated opencode.json.",
   }
 }
 
@@ -99,15 +100,15 @@ async function cleanGitignore(root) {
 
 function mcpCommandFor(source, packageSpec) {
   if (source === "pnpm") return ["pnpm", "dlx", packageSpec, "mcp", "."]
-  if (source === "global") return [PACKAGE_NAME, "mcp", "."]
+  if (source === "global") return [GLOBAL_BIN_NAME, "mcp", "."]
   if (source === "local") return [process.execPath, localCliPath(), "mcp", "."]
-  throw new Error(`Fuente de instalacion no soportada: ${source}. Usa pnpm, global o local.`)
+  throw new Error(`Unsupported install source: ${source}. Use pnpm, global, or local.`)
 }
 
 function normalizePackageSpec(source, packageSpec) {
   if (source !== "pnpm") return packageSpec
-  if (/^open-context-map(?:@[A-Za-z0-9][A-Za-z0-9._-]*)?$/.test(packageSpec)) return packageSpec
-  throw new Error("El valor de --package debe ser open-context-map o open-context-map@version para evitar ejecutar paquetes inesperados.")
+  if (/^@juliodiazru\/open-context-map(?:@[A-Za-z0-9][A-Za-z0-9._-]*)?$/.test(packageSpec)) return packageSpec
+  throw new Error("The --package value must be @juliodiazru/open-context-map or @juliodiazru/open-context-map@version to avoid running unexpected packages.")
 }
 
 function localCliPath() {
@@ -179,7 +180,7 @@ async function readJsonIfExists(filePath) {
   try {
     return JSON.parse(stripJsonCommentsAndTrailingCommas(text))
   } catch (error) {
-    throw new Error(`${filePath} no es JSON/JSONC valido. Corrigelo antes de ejecutar init. ${error.message}`)
+    throw new Error(`${filePath} is not valid JSON/JSONC. Fix it before running init. ${error.message}`)
   }
 }
 
@@ -258,91 +259,91 @@ function stripJsonCommentsAndTrailingCommas(text) {
 function skillTemplate() {
   return `---
 name: open-context-map-first
-description: Usa esta skill cuando necesites entender el contexto del repositorio antes de editar archivos.
+description: Use this skill when you need to understand repository context before editing files.
 ---
 
 # Open Context Map First
 
-Usa esta skill cuando necesites entender codigo antes de cambiarlo.
+Use this skill when you need to understand code before changing it.
 
-## Regla
+## Rule
 
-Usa primero el MCP \`open-context-map\` para bugs, refactors, features, impacto y explicaciones de flujo.
+Use the \`open-context-map\` MCP first for bugs, refactors, features, impact analysis, and flow explanations.
 
-## Flujo sugerido
+## Suggested Flow
 
-1. Crea un paquete de contexto para el simbolo o tema pedido.
-2. Si hace falta, revisa callers, callees y el flujo.
-3. Lee los archivos reales que el mapa señale.
-4. Edita solo despues de revisar el codigo fuente.
+1. Build a context pack for the requested symbol or topic.
+2. If needed, inspect callers, callees, and trace flow.
+3. Read the real files that the map points to.
+4. Edit only after checking the source files.
 
-Mientras el MCP este activo, el indice se actualiza solo cuando cambian archivos.
+While the MCP is active, the index updates itself when files change.
 
-El grafo ayuda a orientarte, pero no reemplaza leer el codigo real.
+The graph helps you orient yourself, but it does not replace reading the real code.
 `
 }
 
 function bugCommandTemplate() {
   return `---
-description: Crea contexto de bug con open-context-map
+description: Build bug context with open-context-map
 agent: context-first
 subtask: true
 ---
 
-Necesito entender un posible bug alrededor de \`$ARGUMENTS\`.
+I need to understand a possible bug around \`$ARGUMENTS\`.
 
-Usa primero el MCP \`open-context-map\` y crea contexto de tipo \`bug\`.
+Use the \`open-context-map\` MCP first and build context of type \`bug\`.
 
-Entrega final:
+Final output:
 
-- que hace esta pieza
-- donde empieza el flujo
-- quien la llama
-- que llama despues
-- que archivos conviene leer
-- que pruebas parecen relacionadas
+- what this piece does
+- where the flow starts
+- who calls it
+- what it calls next
+- which files are worth reading
+- which tests look related
 `
 }
 
 function explainFlowCommandTemplate() {
   return `---
-description: Explica un flujo usando open-context-map
+description: Explain a flow using open-context-map
 agent: context-first
 subtask: true
 ---
 
-Quiero entender el flujo que empieza en \`$ARGUMENTS\`.
+I want to understand the flow that starts at \`$ARGUMENTS\`.
 
-Usa el MCP \`open-context-map\` para trazar el flujo, revisar callers/callees si hace falta y explicarlo para una persona principiante.
+Use the \`open-context-map\` MCP to trace the flow, inspect callers and callees if needed, and explain it for a beginner.
 
-Entrega final:
+Final output:
 
-- simbolo inicial
-- pasos principales del flujo
-- archivos importantes
-- huecos que todavia hay que verificar en codigo real
+- starting symbol
+- main flow steps
+- important files
+- gaps that still need to be verified in real code
 `
 }
 
 function contextFirstAgentTemplate() {
   return `---
-description: Analiza contexto del repositorio con open-context-map antes de editar codigo.
+description: Analyze repository context with open-context-map before editing code.
 mode: subagent
 permission:
   edit: deny
   bash: deny
 ---
 
-Tu trabajo es entender el contexto antes de que otro agente cambie codigo.
+Your job is to understand context before another agent changes code.
 
-Flujo recomendado:
+Recommended flow:
 
-1. Usa primero el MCP \`open-context-map\`.
-2. Resume simbolos, callers, callees, archivos y pruebas relacionadas.
-3. Explica el resultado en lenguaje simple.
-4. Propone los siguientes archivos a leer.
-5. No edites archivos.
+1. Use the \`open-context-map\` MCP first.
+2. Summarize symbols, callers, callees, files, and related tests.
+3. Explain the result in simple language.
+4. Propose the next files to read.
+5. Do not edit files.
 
-Recuerda que el mapa se actualiza solo mientras el MCP esta corriendo.
+Remember that the map updates automatically while the MCP is running.
 `
 }

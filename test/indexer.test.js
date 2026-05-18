@@ -47,7 +47,7 @@ function saveOrder(input) {
   const pack = buildContextPack(graph, "placeOrder", "bug")
   assert.equal(pack.type, "bug")
   assert.equal(pack.traceStart.name, "placeOrder")
-  assert.ok(pack.beginnerSummary.includes("Tipo de tarea"))
+  assert.ok(pack.beginnerSummary.includes("Task type"))
 })
 
 test("skips node_modules", async () => {
@@ -212,7 +212,7 @@ test("init configures opencode and creates the initial index", async () => {
   assert.equal(result.ok, true)
   assert.equal(result.command.join(" "), "open-context-map mcp .")
   assert.equal(result.index, ".open-context-map/index.json")
-  assert.match(result.nextStep, /Reinicia opencode/)
+  assert.match(result.nextStep, /Restart opencode/)
 
   const config = JSON.parse(await readFile(path.join(repo, "opencode.json"), "utf8"))
   assert.deepEqual(config.mcp["open-context-map"].command, ["open-context-map", "mcp", "."])
@@ -220,7 +220,7 @@ test("init configures opencode and creates the initial index", async () => {
 
   const skill = await readFile(path.join(repo, ".opencode/skills/open-context-map-first/SKILL.md"), "utf8")
   assert.ok(skill.includes("name: open-context-map-first"))
-  assert.ok(skill.includes("el indice se actualiza solo"))
+  assert.ok(skill.includes("the index updates itself"))
 
   const gitignore = await readFile(path.join(repo, ".gitignore"), "utf8")
   assert.ok(gitignore.includes(".open-context-map/"))
@@ -232,10 +232,10 @@ test("init uses pnpm by default", async () => {
 
   const result = await initProject(repo)
   assert.equal(result.ok, true)
-  assert.deepEqual(result.command, ["pnpm", "dlx", "open-context-map@0.1.0", "mcp", "."])
+  assert.deepEqual(result.command, ["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.0", "mcp", "."])
 
   const config = JSON.parse(await readFile(path.join(repo, "opencode.json"), "utf8"))
-  assert.deepEqual(config.mcp["open-context-map"].command, ["pnpm", "dlx", "open-context-map@0.1.0", "mcp", "."])
+  assert.deepEqual(config.mcp["open-context-map"].command, ["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.0", "mcp", "."])
 })
 
 test("init rejects unexpected pnpm package specs", async () => {
@@ -244,7 +244,7 @@ test("init rejects unexpected pnpm package specs", async () => {
 
   await assert.rejects(
     () => initProject(repo, { packageSpec: "evil-package" }),
-    /open-context-map o open-context-map@version/,
+    /@juliodiazru\/open-context-map or @juliodiazru\/open-context-map@version/,
   )
 })
 

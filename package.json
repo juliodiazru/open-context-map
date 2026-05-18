@@ -1,7 +1,7 @@
 {
-  "name": "open-context-map",
+  "name": "@juliodiazru/open-context-map",
   "version": "0.1.0",
-  "description": "Mapa local de contexto de codigo con CLI y MCP para opencode.",
+  "description": "Local code context map with CLI and MCP support for opencode.",
   "type": "module",
   "private": false,
   "packageManager": "pnpm@10.33.0",

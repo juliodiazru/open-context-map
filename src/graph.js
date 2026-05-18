@@ -234,19 +234,19 @@ function scoreNode(node, query) {
 }
 
 function explanationForType(type) {
-  if (type === "bug") return "Paquete para arreglar un bug: mira quien llama, que se llama despues y que pruebas pueden fallar."
-  if (type === "refactor") return "Paquete para refactor: mira impacto antes de cambiar nombres, clases o funciones."
-  if (type === "feature") return "Paquete para feature: mira piezas parecidas para seguir el estilo del proyecto."
-  return "Paquete general: junta simbolos, archivos y relaciones cercanas."
+  if (type === "bug") return "Bug package: review callers, what gets called next, and which tests may fail."
+  if (type === "refactor") return "Refactor package: review impact before changing names, classes, or functions."
+  if (type === "feature") return "Feature package: review similar pieces to follow the project style."
+  return "General package: gather nearby symbols, files, and relationships."
 }
 
 function summarizeForBeginners(type, symbols, callers, callees, tests) {
   return [
-    `Tipo de tarea: ${type}.`,
-    `Simbolos principales encontrados: ${symbols.length}.`,
-    `Lugares que llaman a esos simbolos: ${callers.length}.`,
-    `Lugares que esos simbolos llaman despues: ${callees.length}.`,
-    `Pruebas relacionadas encontradas: ${tests.length}.`,
-    "Lee primero los simbolos principales. Luego mira callers para entender de donde viene el flujo. Despues mira callees para saber que pasa al final.",
+    `Task type: ${type}.`,
+    `Primary symbols found: ${symbols.length}.`,
+    `Places that call those symbols: ${callers.length}.`,
+    `Places those symbols call next: ${callees.length}.`,
+    `Related tests found: ${tests.length}.`,
+    "Read the main symbols first. Then inspect callers to understand where the flow comes from. After that, inspect callees to see what happens next.",
   ].join(" ")
 }
