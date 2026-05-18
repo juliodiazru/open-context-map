@@ -147,40 +147,40 @@ class McpStdioServer {
 
 function toolsList() {
   return [
-    tool("index_repo", "Crea el indice local del repositorio.", {
-      repoPath: stringSchema("Ruta del repositorio. Si se omite, usa la carpeta configurada."),
+    tool("index_repo", "Build the local repository index.", {
+      repoPath: stringSchema("Repository path. If omitted, uses the configured folder."),
     }),
-    tool("search_code_graph", "Busca archivos y simbolos en el grafo de codigo.", {
-      query: stringSchema("Texto a buscar."),
-      repoPath: stringSchema("Ruta opcional del repositorio."),
-      limit: numberSchema("Cantidad maxima de resultados."),
+    tool("search_code_graph", "Search files and symbols in the code graph.", {
+      query: stringSchema("Text to search for."),
+      repoPath: stringSchema("Optional repository path."),
+      limit: numberSchema("Maximum number of results."),
     }, ["query"]),
-    tool("get_symbol", "Busca un simbolo por nombre.", {
-      symbol: stringSchema("Nombre del simbolo."),
-      repoPath: stringSchema("Ruta opcional del repositorio."),
+    tool("get_symbol", "Find a symbol by name.", {
+      symbol: stringSchema("Symbol name."),
+      repoPath: stringSchema("Optional repository path."),
     }, ["symbol"]),
-    tool("find_callers", "Encuentra quien llama a un simbolo.", {
-      symbol: stringSchema("Nombre del simbolo."),
-      repoPath: stringSchema("Ruta opcional del repositorio."),
+    tool("find_callers", "Find who calls a symbol.", {
+      symbol: stringSchema("Symbol name."),
+      repoPath: stringSchema("Optional repository path."),
     }, ["symbol"]),
-    tool("find_callees", "Encuentra que llama un simbolo despues.", {
-      symbol: stringSchema("Nombre del simbolo."),
-      repoPath: stringSchema("Ruta opcional del repositorio."),
+    tool("find_callees", "Find what a symbol calls next.", {
+      symbol: stringSchema("Symbol name."),
+      repoPath: stringSchema("Optional repository path."),
     }, ["symbol"]),
-    tool("trace_flow", "Sigue el flujo desde un simbolo por varios niveles.", {
-      symbol: stringSchema("Nombre del simbolo inicial."),
-      depth: numberSchema("Profundidad maxima."),
-      repoPath: stringSchema("Ruta opcional del repositorio."),
+    tool("trace_flow", "Trace the flow from a symbol across multiple levels.", {
+      symbol: stringSchema("Starting symbol name."),
+      depth: numberSchema("Maximum depth."),
+      repoPath: stringSchema("Optional repository path."),
     }, ["symbol"]),
-    tool("analyze_impact", "Analiza el impacto de cambiar un simbolo: que otros simbolos dependen de el directa o indirectamente.", {
-      symbol: stringSchema("Nombre del simbolo."),
-      depth: numberSchema("Profundidad maxima de busqueda hacia atras."),
-      repoPath: stringSchema("Ruta opcional del repositorio."),
+    tool("analyze_impact", "Analyze the impact of changing a symbol: which other symbols depend on it directly or indirectly.", {
+      symbol: stringSchema("Symbol name."),
+      depth: numberSchema("Maximum backward search depth."),
+      repoPath: stringSchema("Optional repository path."),
     }, ["symbol"]),
-    tool("build_context_pack", "Crea un paquete de contexto para bug, refactor, feature o general.", {
-      query: stringSchema("Texto o simbolo principal."),
-      type: stringSchema("Tipo: bug, refactor, feature o general."),
-      repoPath: stringSchema("Ruta opcional del repositorio."),
+    tool("build_context_pack", "Build a context pack for bug, refactor, feature, or general tasks.", {
+      query: stringSchema("Primary text or symbol."),
+      type: stringSchema("Type: bug, refactor, feature, or general."),
+      repoPath: stringSchema("Optional repository path."),
     }, ["query"]),
   ]
 }

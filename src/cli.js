@@ -7,22 +7,22 @@ import { analyzeImpact, buildContextPack, getCallees, getCallers, loadGraph, nor
 import { asJson, compactCallResult, compactContextPack, compactImpactResult, shortNode } from "./format.js"
 import { initProject, uninstallProject } from "./init.js"
 
-const HELP = `open-context-map - mapa local de contexto para codigo
+const HELP = `open-context-map - local code context map
 
-Uso:
+Usage:
   open-context-map index [repo]
   open-context-map watch [repo]
-  open-context-map init [repo] [--source pnpm|global|local] [--package open-context-map@0.1.0] [--no-index]
+  open-context-map init [repo] [--source pnpm|global|local] [--package @juliodiazru/open-context-map@0.1.0] [--no-index]
   open-context-map uninstall [repo]
-  open-context-map search <texto> [repo]
-  open-context-map callers <simbolo> [repo]
-  open-context-map callees <simbolo> [repo]
-  open-context-map trace <simbolo> [repo] --depth 3
-  open-context-map impact <simbolo> [repo] --depth 3
-  open-context-map context <texto> [repo] --type bug|refactor|feature|general
+  open-context-map search <text> [repo]
+  open-context-map callers <symbol> [repo]
+  open-context-map callees <symbol> [repo]
+  open-context-map trace <symbol> [repo] --depth 3
+  open-context-map impact <symbol> [repo] --depth 3
+  open-context-map context <text> [repo] --type bug|refactor|feature|general
   open-context-map mcp [repo]
 
-Ejemplo:
+Example:
   open-context-map index .
   open-context-map watch .
   open-context-map init .
@@ -41,13 +41,13 @@ async function main() {
   if (command === "index") {
     const repo = firstArg ?? "."
     const graph = await indexRepository(repo)
-    process.stdout.write(asJson({ ok: true, message: "Indice creado", stats: graph.stats }))
+    process.stdout.write(asJson({ ok: true, message: "Index created", stats: graph.stats }))
     return
   }
 
   if (command === "watch") {
     const repo = firstArg ?? "."
-    process.stderr.write(`Observando cambios en: ${path.resolve(repo)}\n`)
+    process.stderr.write(`Watching changes in: ${path.resolve(repo)}\n`)
     const watcher = await startWatcher(repo)
     const stop = () => { watcher.stop(); process.exit(0) }
     process.on("SIGTERM", stop)
@@ -80,7 +80,7 @@ async function main() {
     return
   }
 
-  if (!firstArg) throw new Error(`Falta argumento.\n\n${HELP}`)
+  if (!firstArg) throw new Error(`Missing argument.\n\n${HELP}`)
 
   const parsedArgs = parseTail(tail)
   const repo = parsedArgs.positionals[0] ?? "."
@@ -120,7 +120,7 @@ async function main() {
     return
   }
 
-  throw new Error(`Comando desconocido: ${command}\n\n${HELP}`)
+  throw new Error(`Unknown command: ${command}\n\n${HELP}`)
 }
 
 async function loadGraphOrCreate(repo) {
