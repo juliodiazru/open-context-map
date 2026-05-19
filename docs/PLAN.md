@@ -1,111 +1,109 @@
 # Project plan
 
-This document explains the plan in simple language.
+> Language: English
+> Idioma: [Español](es/PLAN.md)
+
+This document explains the roadmap in simple language.
 
 ## Problem
 
-When an AI or a person changes code, reading a single file is not enough.
+When a person or an AI edits code, reading one file is rarely enough.
 
-You need to understand:
+You also need to understand:
 
 - where a flow starts
 - who calls what
 - which files are related
-- which tests might break
-- what happens if one piece changes: what depends on it
+- which tests may be affected
+- what depends on the code you want to change
 
 ## Goal
 
-Build a local tool that creates a structural code map before editing.
+Build a local tool that creates a structural repository map before editing.
 
-That map should be queryable from the terminal and also from `opencode` through MCP.
+That map should be available from:
 
-The LLM should not have to discover the architecture by reading linear text.
+- the terminal
+- `opencode` through MCP
 
-The system should provide the relevant path, the impact, and the real relationships.
+The goal is not to replace normal code reading.
 
-It should also make two common mental paths explicit:
-
-- go backward from a piece to find the origin of the flow
-- go forward from a piece to understand everything it triggers
+The goal is to make repository structure easier to find.
 
 ## What is already implemented
 
-### Engine base
+### Core engine
 
-- minimal Node.js project
-- no external runtime dependencies
+- Node.js project
+- runtime based on built-in APIs
 - local CLI
-- MCP server
+- local MCP server
 
-### Local map
+### Local graph
 
 - nodes for files and symbols
 - import and call relationships
-- index persisted in `.open-context-map/index.json`
+- local index in `.open-context-map/index.json`
 - incremental reindexing when files change
 
-### Graph analysis
+### Analysis features
 
 - symbol and file search
-- callers: who calls a symbol
-- callees: what a symbol calls
-- trace: forward flow from a symbol
-- impact: backward flow, what breaks if a symbol changes
+- callers
+- callees
+- forward trace
+- backward impact analysis
+- context packs for `bug`, `refactor`, `feature`, and `general`
 
-### Integration with opencode
+### `opencode` integration
 
-- `opencode.json`
-- local skill
-- example commands
-- example subagent
-- `init` command to generate everything in a user project
-- `uninstall` command to clean up everything `init` added
-- automatic behavior after restarting `opencode`
+- generated `opencode.json` entry
+- generated skill, commands, and subagent
+- `init` command to create everything in a user project
+- `uninstall` command to remove generated setup
 
-## Recommended next steps
+## Next steps
 
-### Better parser
+### Improve parser quality
 
-Keep improving the parser without breaking the simple installation principle.
+Keep improving symbol and call detection without turning the installation into a heavy setup.
 
-If a deeper parser or LSP support is ever added, it should be transparent to the user and should not require extra manual steps.
+### Improve symbol resolution
 
-### Better symbol resolution
+Better distinguish methods that share the same short name in different classes or files.
 
-Resolve methods with the same name in different classes more accurately.
+### Add higher-level graph signals
 
-### Architectural anomaly detection
+Useful future checks include:
 
-Detect:
-
-- classes with too many methods and too many outgoing calls
-- symbols with no callers (dead code)
+- dead code candidates
 - cycles in the call graph
+- classes with too many outgoing calls
 
-### Open publication
+### Harden release workflow
 
-Publish the package manually when it is ready, so usage becomes:
+The package is already published. The next maturity step is to keep improving release hardening, for example:
 
-```bash
-pnpm dlx @juliodiazru/open-context-map@0.1.2 init .
-```
+- maintainer account protection
+- trusted publishing
+- provenance
+- stronger automated checks around releases
 
-### Better opencode experience
+The current manual release process is documented in `docs/RELEASE_PROCESS.md`.
 
-Add more specialized commands and agents only if they solve real repeated cases.
+### Improve `opencode` experience carefully
 
-### Evaluation
+Add more commands or agents only when they solve a repeated user problem.
 
-Test the project with several example repositories and measure whether the generated context actually helps editing.
+### Evaluate on real repositories
+
+Test the tool on more repositories and measure whether the generated context actually helps editing and review.
 
 ## Knowledge base
 
-The project idea does not come from intuition alone.
-
-It is supported by known work on program comprehension:
+The project idea is grounded in known work on program comprehension:
 
 - Weiser (IEEE TSE, 1984): slicing for impact analysis
 - LaToza, Venolia, and DeLine (ICSE, 2006): following call chains helps maintain the mental model
-- Maalej et al. (TOSEM, 2014): people understand code better with structural navigation than with linear reading
-- RepoCoder (EMNLP, 2023): for AI models, retrieving structured context works better than feeding complete files
+- Maalej et al. (TOSEM, 2014): structural navigation helps people understand code better than purely linear reading
+- RepoCoder (EMNLP, 2023): structured retrieval can help code-focused AI tasks more than dumping whole files

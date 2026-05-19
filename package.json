@@ -1,6 +1,6 @@
 {
   "name": "@juliodiazru/open-context-map",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Local code context map with CLI and MCP support for opencode.",
   "homepage": "https://github.com/juliodiazru/open-context-map#readme",
   "bugs": {
@@ -19,7 +19,9 @@
   "files": [
     "src/",
     "README.md",
+    "README.es.md",
     "SECURITY.md",
+    "SECURITY.es.md",
     "docs/"
   ],
   "scripts": {

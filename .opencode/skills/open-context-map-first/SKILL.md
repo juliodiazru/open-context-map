@@ -16,6 +16,9 @@ Use the `open-context-map` MCP first for bugs, refactors, features, impact analy
 1. Build a context pack for the requested symbol or topic.
 2. If needed, inspect callers, callees, and trace flow.
 3. Read the real files that the map points to.
-4. Only edit after checking the source files.
+4. Explain the result in simple language.
+5. Only edit after checking the source files.
 
-The graph is a helper, not the final truth.
+While the MCP is active, the index updates itself.
+
+If the graph and the source files disagree, trust the source files.

@@ -6,7 +6,7 @@ import { INDEX_DIR, safeRepoRoot } from "./security.js"
 
 const PACKAGE_NAME = "@juliodiazru/open-context-map"
 const GLOBAL_BIN_NAME = "open-context-map"
-const PACKAGE_VERSION = "0.1.2"
+const PACKAGE_VERSION = "0.1.3"
 const MCP_NAME = "open-context-map"
 
 export async function initProject(repoPath = process.cwd(), options = {}) {
@@ -275,9 +275,12 @@ Use the \`open-context-map\` MCP first for bugs, refactors, features, impact ana
 1. Build a context pack for the requested symbol or topic.
 2. If needed, inspect callers, callees, and trace flow.
 3. Read the real files that the map points to.
-4. Edit only after checking the source files.
+4. Explain the result in simple language.
+5. Edit only after checking the source files.
 
 While the MCP is active, the index updates itself when files change.
+
+If the graph and the source files disagree, trust the source files.
 
 The graph helps you orient yourself, but it does not replace reading the real code.
 `
@@ -294,14 +297,19 @@ I need to understand a possible bug around \`$ARGUMENTS\`.
 
 Use the \`open-context-map\` MCP first and build context of type \`bug\`.
 
+After that, read the real files that the graph points to.
+
+Explain the result in beginner-friendly language.
+
 Final output:
 
 - what this piece does
-- where the flow starts
+- where the flow probably starts
 - who calls it
 - what it calls next
-- which files are worth reading
+- which files are worth reading first
 - which tests look related
+- what is still an assumption
 `
 }
 
@@ -315,6 +323,8 @@ subtask: true
 I want to understand the flow that starts at \`$ARGUMENTS\`.
 
 Use the \`open-context-map\` MCP to trace the flow, inspect callers and callees if needed, and explain it for a beginner.
+
+Read the real files that the graph points to before treating the flow as final.
 
 Final output:
 
@@ -342,7 +352,8 @@ Recommended flow:
 2. Summarize symbols, callers, callees, files, and related tests.
 3. Explain the result in simple language.
 4. Propose the next files to read.
-5. Do not edit files.
+5. If the map and files disagree, trust the files.
+6. Do not edit files.
 
 Remember that the map updates automatically while the MCP is running.
 `
