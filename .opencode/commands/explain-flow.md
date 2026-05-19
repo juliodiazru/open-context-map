@@ -8,6 +8,8 @@ I want to understand the flow that starts at `$ARGUMENTS`.
 
 Use the `open-context-map` MCP to trace the flow, inspect callers and callees if needed, and explain it for a beginner.
 
+Read the real files that the graph points to before treating the flow as final.
+
 Final output:
 
 - starting symbol

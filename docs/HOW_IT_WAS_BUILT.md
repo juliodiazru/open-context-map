@@ -1,111 +1,171 @@
 # How it was built
 
-This document explains the implementation in simple language.
+> Language: English
+> Idioma: [Español](es/HOW_IT_WAS_BUILT.md)
 
-## Step 1: project name and structure
+This document is for contributors who want a simple explanation of the implementation.
 
-The chosen published package name is `@juliodiazru/open-context-map`, while the CLI command remains `open-context-map`.
+If you are new to the project, read `README.md` and `docs/MANUAL_BEGINNER.md` first.
 
-## Step 2: avoid external runtime dependencies
+## Design goal
 
-Node.js with built-in libraries was used.
+The project tries to stay useful without becoming heavy.
 
-The main reason was to reduce supply chain risk at this early stage.
+The main idea is:
 
-## Step 3: create security controls
+```text
+read source files as text
+  -> detect symbols and relationships
+  -> store a local JSON index
+  -> answer context questions from CLI or MCP
+```
+
+## 1. Package and CLI naming
+
+- published package: `@juliodiazru/open-context-map`
+- CLI command: `open-context-map`
+
+This keeps the npm package scoped while leaving the terminal command short.
+
+## 2. Runtime dependency choice
+
+The runtime path uses built-in Node.js APIs.
+
+Reason:
+
+- simpler install story
+- smaller runtime supply chain surface
+- easier review in an early-stage project
+
+Development still uses normal dev tooling when contributors run `pnpm install`.
+
+## 3. Security guardrails
 
 Main file: `src/security.js`
 
-This is where the project defines:
+This file defines the basic limits that keep the indexer predictable:
 
-- which directories to ignore
-- which extensions to read
+- which directories are skipped
+- which file extensions are allowed
 - maximum file size
-- safe paths inside the repo
-- the local index path
+- maximum file count
+- path resolution inside the repo root
+- local index location
 
-## Step 4: create a heuristic parser
+The code also skips symbolic links and rejects paths outside the repository root.
+
+## 4. Heuristic parsing
 
 Main file: `src/parser.js`
 
-The parser uses regular expressions to detect:
+The parser uses regular expressions and simple line-based analysis to detect:
 
 - classes
-- functions
-- methods
+- interfaces and similar type declarations
+- functions and methods
 - imports
 - calls
 
-It was also improved to ignore false calls inside strings and comments, because that was polluting the graph.
+It also strips comments and strings before call detection so obvious false positives are reduced.
 
-It also detects Java methods without `public`, `private`, or `protected`. This matters in JUnit tests, because many test methods are package-private.
+The parser is intentionally lightweight. It is meant to give orientation, not to behave like a full compiler or language server.
 
-## Step 5: create the indexer
+## 5. Building the local index
 
 Main file: `src/indexer.js`
 
-The indexer:
+The indexer does this work:
 
-1. walks source files
-2. reads text safely
-3. parses the content
-4. creates nodes and relationships
-5. stores `.open-context-map/index.json`
+1. walk allowed source files
+2. read each file safely
+3. parse symbols and relationships
+4. create graph nodes and edges
+5. store `.open-context-map/index.json`
 
-The index lives in local JSON on purpose.
+The index is local JSON on purpose.
 
-That way there is no need to install an external database to start using the tool.
+That avoids requiring an external database just to try the tool.
 
-## Step 6: create graph queries
+## 6. Querying the graph
 
 Main file: `src/graph.js`
 
-This is where queries come from, such as:
+This layer powers the main user questions:
 
-- general search
+- search
 - callers
 - callees
-- flows
-- impact analysis
+- trace
+- impact
 - context packs
 
-When a person asks about a class, the context pack tries to start the flow from a real method with outgoing calls. That avoids getting stuck on the class name alone.
+Two design choices are especially important:
 
-Impact analysis walks the graph backward: given a symbol, it finds all symbols that call it directly or indirectly. That answers the real senior-engineer question: "if I change this, what breaks".
+- context packs try to start from a useful method when the user asks about a class
+- impact analysis walks backward through callers so the user can ask `what could break if I change this`
 
-## Step 7: create the CLI
+## 7. CLI commands
 
 Main file: `src/cli.js`
 
-The CLI makes it possible to test everything without depending on `opencode` yet.
+The CLI exists for two reasons:
 
-`open-context-map init` was also added, which prepares a user project automatically.
+- people can test the engine without `opencode`
+- the same engine can later be exposed through MCP
 
-That command generates the `opencode` configuration, the `.opencode` files, the `.gitignore`, and the initial index.
+Important commands:
 
-`open-context-map uninstall` does the reverse: it cleans up everything that `init` added.
+- `index`
+- `watch`
+- `search`
+- `callers`
+- `callees`
+- `trace`
+- `impact`
+- `context`
+- `init`
+- `uninstall`
+- `mcp`
 
-The idea is to keep a one-command flow for install and another one for uninstall.
+## 8. Project setup generation
 
-## Step 8: keep the index updated
+Main file: `src/init.js`
+
+`init` writes the project files that `opencode` needs.
+
+It creates:
+
+- `opencode.json`
+- `.opencode/skills/open-context-map-first/SKILL.md`
+- `.opencode/commands/bug-context.md`
+- `.opencode/commands/explain-flow.md`
+- `.opencode/agents/context-first.md`
+- `.gitignore` entry for `.open-context-map/`
+- the first local index
+
+`uninstall` removes that generated setup again.
+
+The goal is a one-command install and a one-command uninstall.
+
+## 9. Keeping the index fresh
 
 Main file: `src/watcher.js`
 
-When MCP is active, a native watcher is used.
+When the MCP server is active, a native watcher tracks file changes and reindexes only the changed files.
 
-That watcher reindexes only the files that changed.
+That keeps the map useful during normal work without asking the user to run extra sync commands.
 
-This lets the tool behave automatically while you work inside the repository.
-
-## Step 9: create the MCP server
+## 10. MCP server
 
 Main file: `src/mcp-server.js`
 
-That file implements JSON-RPC over `stdio` so `opencode` can see the tools as a local MCP.
+The server speaks JSON-RPC over `stdio` so `opencode` can start it as a local MCP server.
 
-## Step 10: integrate with opencode
+That gives the agent structured tools instead of forcing it to guess repository structure from raw text.
 
-Relevant files:
+## 11. Why the generated files look the way they do
+
+Relevant generated paths:
 
 - `opencode.json`
 - `.opencode/skills/open-context-map-first/SKILL.md`
@@ -113,43 +173,37 @@ Relevant files:
 - `.opencode/commands/explain-flow.md`
 - `.opencode/agents/context-first.md`
 
-This was adjusted by following the official documentation for:
+These were shaped around the official `opencode` documentation for:
 
 - config
+- MCP servers
 - skills
 - commands
 - agents
-- MCP servers
 
-It was also compared against public ecosystem repositories to respect the most common `opencode` patterns.
+Important rules confirmed from the docs:
 
-Important validation from the official `opencode` documentation:
-
-- `mcp` lives inside `opencode.json`
+- `mcp` lives in `opencode.json`
 - a local MCP uses `type: "local"`
-- `command` must be a list of strings
-- `enabled` turns the MCP on or off
-- `timeout` is expressed in milliseconds
+- `command` is an array of strings
+- `timeout` is in milliseconds
 - skills live in `.opencode/skills/<name>/SKILL.md`
 - commands live in `.opencode/commands/`
 - agents live in `.opencode/agents/`
 
-The target installation format follows the official local MCP pattern:
-
-```text
-pnpm dlx @juliodiazru/open-context-map@0.1.2 init .
-```
-
-And inside `opencode.json` it leaves a local MCP with a command like:
+The generated command follows the official local MCP pattern:
 
 ```json
-["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.2", "mcp", "."]
+["pnpm", "dlx", "@juliodiazru/open-context-map@0.1.3", "mcp", "."]
 ```
 
-## Step 11: keep honest limits
+## 12. Honest limits
 
-The parser is still heuristic.
+This project does not try to compete with a full LSP or deep language-specific analyzers.
 
-That means it does not try to compete with a full LSP or with much heavier language-specific analyzers.
+The goal is different:
 
-The goal here is different: provide a useful, fast, portable map that is easy to install.
+- useful context quickly
+- local install and uninstall
+- portable JSON index
+- enough structure to improve repository understanding before edits

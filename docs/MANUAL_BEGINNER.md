@@ -1,189 +1,251 @@
 # Beginner manual
 
-This manual explains the project step by step, without assuming advanced experience.
+> Language: English
+> Idioma: [Español](es/MANUAL_BEGINNER.md)
 
-## What @juliodiazru/open-context-map is
+This guide is for people who want to use `@juliodiazru/open-context-map` without reading the implementation first.
 
-It is a tool that creates a map of your code.
+It uses simple language on purpose.
 
-That map helps an AI or a person understand the project better before changing files.
+## First, know which path you need
 
-## Important words
+There are two common ways to use this project.
 
-**Repository**: the folder where a project lives.
+### Path A: use the published tool inside another project
 
-**Index**: the file that stores the processed map.
+Choose this if you want to analyze a repository with `opencode`.
 
-**Node**: one piece of the map. It can be a file, a class, or a function.
+You do not need to clone this repository.
 
-**Relationship**: a connection between nodes. For example: one function calls another.
+### Path B: contribute to this repository
 
-**Graph**: the full set of nodes and relationships.
+Choose this if you want to change the code of `open-context-map` itself.
 
-**MCP**: the standard way for an AI to use external tools.
-
-**opencode**: the tool where an agent can use this MCP.
-
-## Step 1: enter the project folder
-
-```bash
-cd your-project-name
-```
-
-## Step 2: install
+In that case you work in this repository and run:
 
 ```bash
 pnpm install
 ```
 
-Because the project has no external runtime dependencies, this should be fast.
+That installs development dependencies for contributors. It is not the normal setup step for end users.
 
-## Install @juliodiazru/open-context-map in another project
+## What this tool is
 
-The intended user flow is a single command:
+It creates a local map of your code.
+
+That map helps a person or an AI answer questions like these:
+
+- where does this flow start
+- who calls this function
+- what does it call next
+- what could break if I change it
+
+## Important words
+
+**Repository**: the folder where a project lives.
+
+**Index**: the generated file that stores the map.
+
+**Node**: one piece of the map, such as a file, class, function, or method.
+
+**Relationship**: a connection between nodes. Example: one function calls another.
+
+**Graph**: the full set of nodes and relationships.
+
+**MCP**: a standard way for an AI tool to call external tools.
+
+**opencode**: the AI tool that can load this MCP.
+
+## Fastest path for most users
+
+From the root of the project you want to analyze:
 
 ```bash
-pnpm dlx @juliodiazru/open-context-map@0.1.2 init .
+pnpm dlx @juliodiazru/open-context-map@0.1.3 init .
 ```
 
-That command creates the `opencode` configuration, the skill, the commands, the agent, and the initial index.
+Then:
 
-The idea is that afterward you should not need extra manual steps: restart `opencode` and the tool is ready.
+1. wait for the command to finish
+2. restart `opencode`
+3. ask for context in plain language
 
-## Uninstall @juliodiazru/open-context-map from a project
+Example prompts:
+
+- `use open-context-map to explain the flow of initProject`
+- `use open-context-map to analyze the impact of changing UserService`
+- `use open-context-map to build bug context for PaymentController`
+
+## What `init` does
+
+It creates the project files needed by `opencode`.
+
+- `opencode.json`
+- `.opencode/skills/open-context-map-first/SKILL.md`
+- `.opencode/commands/bug-context.md`
+- `.opencode/commands/explain-flow.md`
+- `.opencode/agents/context-first.md`
+- `.open-context-map/index.json`
+- `.gitignore` entry for `.open-context-map/`
+
+After that, you should not need to copy configuration files by hand.
+
+## Step-by-step CLI use
+
+You can also use the CLI directly.
+
+### Step 1: go to the repository you want to analyze
 
 ```bash
-pnpm dlx @juliodiazru/open-context-map@0.1.2 uninstall .
+cd your-project-name
 ```
 
-That command cleans up everything `init` added:
-
-- the `.open-context-map/` directory
-- the MCP entry in `opencode.json`
-- the generated `.opencode/` files
-- the `.gitignore` entry
-
-## Step 3: create or update the map
+### Step 2: create or refresh the map
 
 ```bash
 open-context-map index .
 ```
 
-The dot `.` means: `use this current folder`.
+The dot `.` means `use the current folder`.
 
-That command creates:
+This creates:
 
 ```text
 .open-context-map/index.json
 ```
 
-## Step 4: search for something
+### Step 3: search for a symbol or file
 
 ```bash
-open-context-map search "indexRepository"
+open-context-map search "initProject" .
 ```
 
-This is useful for finding a class, a function, or a file related to that text.
+Use this when you want a starting point.
 
-## Step 5: see who calls a function
+### Step 4: see who calls a symbol
 
 ```bash
-open-context-map callers "indexRepository"
+open-context-map callers "initProject" .
 ```
 
 Think of it as: `who uses this`.
 
-## Step 6: see what a function calls
+### Step 5: see what a symbol calls next
 
 ```bash
-open-context-map callees "indexRepository"
+open-context-map callees "initProject" .
 ```
 
-Think of it as: `what does this do next`.
+Think of it as: `what does this trigger next`.
 
-## Step 7: follow a flow forward
+### Step 6: follow a flow forward
 
 ```bash
-open-context-map trace "indexRepository" --depth 3
+open-context-map trace "initProject" . --depth 3
 ```
 
-This tries to follow the call chain several steps forward.
+Use this to follow the next few steps in the call chain.
 
-## Step 8: analyze the impact of changing a symbol
+### Step 7: estimate change impact
 
 ```bash
-open-context-map impact "indexRepository" --depth 3
+open-context-map impact "initProject" . --depth 3
 ```
 
-Think of it as: `if I change this, what breaks`.
+Think of it as: `if I change this, what could I affect`.
 
-The result shows all symbols that call `indexRepository` directly or indirectly.
-
-## Step 9: build context for a task
+### Step 8: build context for a task
 
 For a bug:
 
 ```bash
-open-context-map context "indexRepository" --type bug
+open-context-map context "initProject" . --type bug
 ```
 
 For a refactor:
 
 ```bash
-open-context-map context "indexRepository" --type refactor
+open-context-map context "initProject" . --type refactor
 ```
 
 For a feature:
 
 ```bash
-open-context-map context "indexRepository" --type feature
+open-context-map context "initProject" . --type feature
 ```
 
-When you ask about a class, the tool tries to find the most useful method to start the flow.
+When you ask about a class, the tool tries to start from a useful method instead of stopping at the class name.
 
-## Step 10: use it with opencode
+## Use it with `opencode`
 
-1. Install it in your project with `init`.
-2. Open or restart `opencode` in that project.
-3. Ask for something like: `use open-context-map to explain the flow of indexRepository`.
+1. Run `init` in the project.
+2. Restart `opencode`.
+3. Ask for context before editing code.
 
-While MCP is active, the index updates automatically when files change. You do not need to run another tool or an external database.
+While the MCP is active, the index updates automatically when files change.
 
-## Useful opencode commands included in the project
+You do not need an external database.
 
-The engine includes real configuration examples:
+## Useful helper files generated for `opencode`
 
-- skill: use the map first before editing
-- command `/bug-context`
-- command `/explain-flow`
-- subagent `context-first`
+`init` creates simple helper instructions:
 
-In a user project, those files are not copied manually: `open-context-map init` generates them.
+- a skill that says `use the map first before editing`
+- a `/bug-context` command
+- an `/explain-flow` command
+- a `context-first` subagent
 
 ## If something fails
 
-1. Rebuild the index.
+Try these checks in order.
+
+### 1. Rebuild the index
 
 ```bash
 open-context-map index .
 ```
 
-2. Try a simple search.
+### 2. Try a simple search
 
 ```bash
-open-context-map search "indexRepository"
+open-context-map search "initProject" .
 ```
 
-3. Run the tests.
+### 3. Restart `opencode`
+
+This matters after `init`, `uninstall`, or manual changes to `opencode.json`.
+
+### 4. Check whether the file type is supported
+
+The parser currently reads these extensions:
+
+- `.js`, `.mjs`, `.cjs`, `.jsx`
+- `.ts`, `.tsx`
+- `.py`, `.go`, `.java`, `.cs`, `.php`, `.rb`, `.rs`, `.kt`, `.swift`
+
+### 5. Check whether the repository is too large for the current limits
+
+- files bigger than `350000` bytes are skipped
+- after `5000` files, scanning stops
+
+### 6. If you are contributing to this repository, run the full check
 
 ```bash
-pnpm test
+pnpm run check
 ```
 
-4. If you changed `opencode.json`, close and reopen `opencode`.
+For more examples, read `docs/TROUBLESHOOTING_BEGINNER.md`.
+
+## Remove the setup from a project
+
+```bash
+pnpm dlx @juliodiazru/open-context-map@0.1.3 uninstall .
+```
+
+That removes the generated MCP entry, helper files, and local index.
 
 ## Important idea
 
 `open-context-map` does not try to replace your editor's LSP.
 
-Its job is different: give you a simple repository map so you can understand where a flow comes from, what a change impacts, and which pieces are worth reading first.
+Its job is different: build a simple repository map so you can decide what to read first and what a change might affect.

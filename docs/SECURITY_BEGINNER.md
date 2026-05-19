@@ -1,130 +1,217 @@
 # Security for beginners
 
-This project was built with security as a priority.
+> Language: English
+> Idioma: [Español](es/SECURITY_BEGINNER.md)
 
-## Why it matters
+This document explains the security model in simple language.
 
-Supply chain attacks have happened in the JavaScript ecosystem.
+It focuses on one question:
 
-That means a problem in packages, install scripts, tokens, or CI can end up affecting your project.
+**What should you trust, and what should you verify, before using this tool?**
 
-## Security decisions in this POC
+## What we checked before writing this guide
 
-### No external runtime dependencies
+This guide was aligned with public documentation from:
 
-The main engine uses only built-in Node.js APIs.
+- the official `opencode` MCP documentation
+- npm documentation about common registry threats and mitigations
+- GitHub documentation about repository security features
 
-That does not remove all risk, but it greatly reduces the initial attack surface.
+Those sources matter because this project lives at the intersection of three risky areas: package installation, AI tooling, and repository automation.
 
-### Simple but reviewable installation
+## Short version
 
-The target install flow is:
+`open-context-map` is designed to be a local tool.
+
+- it reads repository files as text
+- it does not execute the repository code it analyzes
+- it stores its index locally in `.open-context-map/index.json`
+- it blocks paths outside the selected repository root
+- it tries to redact obvious secrets before saving snippets
+
+That is a good starting point, but it does not remove all risk.
+
+## What you still need to trust
+
+There are three separate trust decisions.
+
+### 1. The package you install
+
+Use the exact package name and a pinned version:
 
 ```bash
-pnpm dlx @juliodiazru/open-context-map@0.1.2 init .
+pnpm dlx @juliodiazru/open-context-map@0.1.3 init .
 ```
 
-That follows the official `opencode` pattern for local MCPs with `pnpm dlx` commands, but pinning the version and reviewing the package before adopting it is still recommended.
+Why this matters:
 
-To lower risk, `init` only accepts the official `@juliodiazru/open-context-map` package or a pinned version of that same package.
+- pinning reduces surprise updates
+- the exact package name helps avoid typosquatting mistakes
+- the `init` command only accepts `@juliodiazru/open-context-map` or the same package with an explicit version
 
-### It does not execute code from the analyzed repo
+### 2. The repository you open in `opencode`
 
-The engine only reads files as text.
+`opencode.json` and `.opencode/` are project configuration.
 
-It does not `import` or `require` the code it analyzes.
+That means they must be treated as trusted code.
 
-### It ignores heavy or risky directories
+If you want to inspect an untrusted branch or PR first, disable project config:
 
-By default it does not analyze directories such as:
+```bash
+OPENCODE_DISABLE_PROJECT_CONFIG=1 opencode
+```
+
+### 3. The AI client you connect to
+
+`open-context-map` keeps the index local.
+
+However, an AI client may still send tool results to a model provider when you ask a question. That depends on the client and provider you use, not on the parser itself.
+
+## Safe defaults in this project
+
+### Runtime uses built-in Node.js APIs only
+
+The current runtime path avoids external runtime dependencies.
+
+That reduces supply chain surface for the actual tool execution.
+
+Note: contributors still install development dependencies when working on this repository.
+
+### The tool reads text, not code execution
+
+It does not `import`, `require`, compile, or run the code it analyzes.
+
+It only reads supported files as UTF-8 text.
+
+### Supported file extensions are explicit
+
+The scanner only reads selected source file types:
+
+- JavaScript and TypeScript
+- Python
+- Go
+- Java
+- C#
+- PHP
+- Ruby
+- Rust
+- Kotlin
+- Swift
+
+Files outside that allowlist are skipped.
+
+### Heavy and risky directories are skipped
+
+Examples:
 
 - `node_modules`
 - `.git`
 - `dist`
 - `build`
 - `coverage`
+- `.next`
 - `.cache`
 - `target`
 
-### It limits large files
+This lowers noise and also avoids scanning directories that are usually large or generated.
 
-If a file is larger than the allowed size, it is skipped.
+### Large files and huge repos are limited
 
-### It blocks paths outside the repo
+Current defaults:
 
-The MCP should not accept arbitrary paths outside the configured root.
+- files over `350000` bytes are skipped
+- scanning stops after `5000` files
 
-This helps avoid reading another project or a sensitive folder by accident.
+This helps avoid runaway work and oversized outputs.
 
-### It limits user input
+### Paths outside the repo are blocked
 
-The `trace` command limits maximum depth.
+The tool resolves paths inside the configured repository root and rejects paths that escape it.
 
-Search limits the maximum number of results.
+That helps prevent accidental reads from another project or a sensitive system folder.
 
-The context type only accepts known values: `bug`, `refactor`, `feature`, and `general`.
+### Secret-like text is redacted before snippets are stored
 
-This helps avoid huge responses and unnecessary memory usage.
+Before saving signatures and call details in the local index, the parser redacts common patterns such as:
 
-### Separate local index
+- `Bearer ...`
+- `ghp_...`
+- `github_pat_...`
+- `AKIA...`
+- assignments with names like `token`, `secret`, `password`, or `apiKey`
 
-The result is stored in:
+This is helpful, but it is not full secret scanning or full data loss prevention.
+
+## What the tool stores locally
+
+The main generated file is:
 
 ```text
 .open-context-map/index.json
 ```
 
-That file is ignored by git.
+That file may contain:
 
-The reason is simple: this workflow does not need an external database.
+- symbol names
+- file paths
+- short signatures
+- caller and callee relationships
+- redacted snippets
 
-Fewer external moving parts also means less operational surface and fewer install or uninstall steps.
+The file is meant to stay local and is added to `.gitignore` by `init`.
 
-### Basic secret redaction
+## Good habits for users
 
-Before storing signatures and call details in the local index, the engine tries to hide common patterns such as `Bearer ...`, `ghp_...`, `github_pat_...`, `AKIA...`, and assignments with names like `token`, `secret`, `password`, or `apiKey`.
+### Prefer pinned commands
 
-It is not full DLP, but it helps avoid repeating obvious secrets inside the index and also reduces noise in MCP responses.
-
-### How to review untrusted branches or PRs
-
-There is an important point: `opencode.json` and `.opencode/` are configuration that a project can bring with it.
-
-If you are about to open a branch or PR you do not trust yet, review it with project configuration disabled:
+Good:
 
 ```bash
-OPENCODE_DISABLE_PROJECT_CONFIG=1 opencode
+pnpm dlx @juliodiazru/open-context-map@0.1.3 init .
 ```
 
-That lowers the risk that repository configuration executes something you have not reviewed yet.
+Less safe:
 
-## Review commands
+```bash
+pnpm dlx @juliodiazru/open-context-map init .
+```
 
-Run:
+### Review generated configuration
+
+After `init`, it is reasonable to inspect:
+
+- `opencode.json`
+- `.opencode/skills/open-context-map-first/SKILL.md`
+- `.opencode/commands/bug-context.md`
+- `.opencode/commands/explain-flow.md`
+- `.opencode/agents/context-first.md`
+
+### Be extra careful with untrusted pull requests
+
+- use `pull_request` workflows for untrusted PRs
+- avoid `pull_request_target` if the workflow checks out and runs PR code
+- avoid broad `GITHUB_TOKEN` permissions without a real need
+
+## Good habits for maintainers
+
+Because the package is published, these hardening steps are worth keeping or strengthening over time:
+
+- npm 2FA on maintainer accounts
+- careful review of every new dependency
+- trusted publishing and provenance when release automation is added
+- CodeQL or similar code scanning
+- Dependabot alerts and security updates
+- branch protection and code owner review on sensitive files
+
+## Review command for contributors
+
+From this repository, run:
 
 ```bash
 pnpm run check
 ```
 
-That runs tests and a basic audit.
-
-## If it is ever published to the package registry
-
-It would be worth adding or strengthening:
-
-- 2FA
-- trusted publishing with OIDC
-- provenance
-- review of every new dependency
-- CodeQL or Semgrep
-- Dependabot or Renovate
-- OpenSSF Scorecard
-
-## CI and pull requests
-
-- Use `pull_request` to test untrusted PRs.
-- Avoid `pull_request_target` if you will check out and execute PR code.
-- Keep minimal permissions in GitHub Actions and avoid storing tokens in steps that do not need them.
+That runs tests and a dependency audit.
 
 ## Sources used
 
@@ -133,11 +220,9 @@ It would be worth adding or strengthening:
 - OpenCode skills: https://opencode.ai/docs/skills/
 - OpenCode commands: https://opencode.ai/docs/commands/
 - OpenCode agents: https://opencode.ai/docs/agents/
-- Node.js security releases: https://nodejs.org/en/blog/vulnerability/
-- Registry threats and mitigations: https://docs.npmjs.com/threats-and-mitigations
-- Registry signatures: https://docs.npmjs.com/about-registry-signatures
-- Audit docs: https://docs.npmjs.com/auditing-package-dependencies-for-security-vulnerabilities/
-- Provenance docs: https://docs.npmjs.com/generating-provenance-statements
+- npm threats and mitigations: https://docs.npmjs.com/threats-and-mitigations
+- npm registry signatures: https://docs.npmjs.com/about-registry-signatures
+- npm audit documentation: https://docs.npmjs.com/auditing-package-dependencies-for-security-vulnerabilities/
+- npm provenance documentation: https://docs.npmjs.com/generating-provenance-statements
+- GitHub security features overview: https://docs.github.com/en/code-security/getting-started/github-security-features
 - GitHub supply chain security: https://github.blog/security/supply-chain-security/
-- SLSA: https://slsa.dev/spec/v1.0/
-- OpenSSF Scorecard: https://github.com/ossf/scorecard

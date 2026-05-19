@@ -1,220 +1,243 @@
 # @juliodiazru/open-context-map
 
-`@juliodiazru/open-context-map` builds a local code map and exposes it over MCP for `opencode`.
+> Language: English
+> Idioma: [Español](README.es.md)
 
-The idea is simple:
+`@juliodiazru/open-context-map` builds a local map of your repository and exposes it as an MCP server for `opencode`.
 
-- first, it reads the repository as text
-- then, it detects files, classes, functions, methods, and simple imports
-- next, it stores useful relationships, for example who calls what
-- finally, `opencode` can ask for that context before editing code
+In simple terms:
 
-The engine is built with **plain Node.js** and **no external runtime dependencies**.
+- it reads your project as text
+- it finds files, classes, functions, methods, imports, and calls
+- it stores those relationships in a local index
+- `opencode` can ask for that context before editing code
 
-That significantly reduces the initial supply chain risk in the JavaScript ecosystem.
+This project follows a simple rule: give useful structure first, then read the real files.
 
-## What it does
+Useful docs:
 
-- creates a local index in `.open-context-map/index.json`
-- searches for related symbols and files
-- computes callers, callees, and simple flows
-- analyzes the impact of changing a symbol: what other pieces depend on it directly or indirectly
-- builds context packs for `bug`, `refactor`, `feature`, and `general`
-- when you ask about a class, it tries to start the flow from the most useful method
-- exposes MCP tools for `opencode`
-- includes real examples of `skills`, `commands`, and `agents` for `opencode`
-- while MCP is active, it updates the index in the background when files change
+- `docs/README.md`
+- `docs/MANUAL_BEGINNER.md`
+- `docs/TROUBLESHOOTING_BEGINNER.md`
+- `docs/SECURITY_BEGINNER.md`
+- `docs/GITHUB_SECURITY_SETUP_BEGINNER.md`
+- `docs/RELEASE_PROCESS.md`
 
-## How it approaches the problem
+## Why this exists
 
-The tool tries to help the same way a person does when they want to understand a feature or a bug:
+When you want to fix a bug or change a feature, one file is rarely enough.
 
-- if you know a class or function, you can see who calls it and trace the path backward to the flow origin
-- if you are already at the target piece, you can see what it calls next and follow the flow forward to the end
-- if you are about to change something, you can review the impact to see what other pieces depend on it
+You usually need to answer questions like these:
 
-## What it does not do yet
+- where does this flow start
+- who calls this function
+- what does it call next
+- what could break if I change it
 
-- it does not try to replace your editor's LSP: it focuses on giving you fast structural context and can coexist with a real LSP
-- it does not resolve every dynamic language-specific case
-- it does not need embeddings to follow the main structural relationships
-- it does not require an external or advanced database: it stores a simple local index so install and uninstall stay easy
+`open-context-map` tries to answer those questions quickly with a local graph.
 
-The parser is still simple, but the install, uninstall, and automatic update flow is already designed for real usage.
+## Quick start
 
-## Requirements
+This is the easiest path if you already use `opencode`.
 
-- Node.js 20 or newer
-- pnpm
-- `opencode` if you want to try the MCP integration
+### 1. Check requirements
 
-## Install in a project
+- Node.js `20` or newer
+- `pnpm`
+- `opencode` if you want the MCP integration
 
-The intended experience is that a user does not copy folders or scripts by hand.
+### 2. Run the pinned install command
 
-Once `0.1.2` or newer is published, from the root of any project that uses `opencode` it will be enough to run:
+From the root of the project you want to analyze:
 
 ```bash
-pnpm dlx @juliodiazru/open-context-map@0.1.2 init .
+pnpm dlx @juliodiazru/open-context-map@0.1.3 init .
 ```
 
-That command prepares:
+Keeping the version pinned is safer than running an unpinned package name.
 
-- `opencode.json` with a local MCP called `open-context-map`
+### 3. Restart `opencode`
+
+`opencode` reads `opencode.json` and `.opencode/` when it starts. Close it and open it again after `init` finishes.
+
+### 4. Ask for context
+
+Examples:
+
+- `use open-context-map to explain the flow of initProject`
+- `use open-context-map to analyze the impact of changing indexRepository`
+- `use open-context-map to build bug context for UserService`
+
+## What `init` creates
+
+The `init` command prepares your project so you do not need to copy files by hand.
+
+- `opencode.json` with a local MCP named `open-context-map`
 - `.opencode/skills/open-context-map-first/SKILL.md`
 - `.opencode/commands/bug-context.md`
 - `.opencode/commands/explain-flow.md`
 - `.opencode/agents/context-first.md`
 - `.gitignore` with `.open-context-map/`
-- `.open-context-map/index.json` as a local index
+- `.open-context-map/index.json`
 
-After running `init`, close and reopen `opencode` in that project. From that point on, the tool is available and the MCP keeps the index up to date automatically while you work.
+## How it works in one glance
 
-### Uninstall
-
-To remove `@juliodiazru/open-context-map` from a project:
-
-```bash
-pnpm dlx @juliodiazru/open-context-map@0.1.2 uninstall .
+```text
+your repository
+  -> open-context-map reads source files as text
+  -> builds .open-context-map/index.json
+  -> opencode calls the MCP
+  -> the agent gets callers, callees, flow, and impact before editing
 ```
 
-That command cleans up:
+## First CLI examples
 
-- the `.open-context-map/` directory
-- the MCP entry in `opencode.json`
-- the `.opencode/` files generated by `init`
-- the `.open-context-map/` entry in `.gitignore`
-
-## Main commands
-
-Create an index:
+Create or refresh the local index:
 
 ```bash
 open-context-map index .
 ```
 
-Search for symbols or files:
+Expected output looks like this:
 
-```bash
-open-context-map search "InterestCalculator"
+```json
+{
+  "ok": true,
+  "message": "Index created",
+  "stats": {
+    "files": 12,
+    "nodes": 176,
+    "edges": 530
+  }
+}
 ```
 
-See who calls a symbol:
+Search for a symbol:
 
 ```bash
-open-context-map callers "calculateSimpleInterest"
+open-context-map search "initProject" .
 ```
 
-See what a symbol calls:
+Example output:
 
-```bash
-open-context-map callees "calculateSchedule"
+```json
+[
+  {
+    "score": 90,
+    "node": {
+      "name": "initProject",
+      "file": "src/init.js",
+      "line": 12,
+      "kind": "function"
+    }
+  }
+]
 ```
 
-Trace a flow forward:
+If the index does not exist yet, query commands create it automatically.
 
-```bash
-open-context-map trace "InterestReportService.buildAnnualReport" --depth 4
-```
+## Common tasks
 
-Analyze the impact of changing a symbol:
+| I want to... | Command |
+| --- | --- |
+| build or refresh the map | `open-context-map index .` |
+| watch local changes manually | `open-context-map watch .` |
+| search for a symbol or file | `open-context-map search "initProject" .` |
+| see who uses a symbol | `open-context-map callers "initProject" .` |
+| see what a symbol uses next | `open-context-map callees "initProject" .` |
+| follow the flow forward | `open-context-map trace "initProject" . --depth 3` |
+| estimate what a change could affect | `open-context-map impact "initProject" . --depth 3` |
+| build a context pack for an AI task | `open-context-map context "initProject" . --type feature` |
+| run the local MCP server directly | `open-context-map mcp .` |
+| remove generated files from a project | `open-context-map uninstall .` |
 
-```bash
-open-context-map impact "calculateSimpleInterest" --depth 4
-```
-
-Build a context pack:
-
-```bash
-open-context-map context "InterestController" --type feature
-```
-
-Available types:
+Available context types:
 
 - `bug`
 - `refactor`
 - `feature`
 - `general`
 
-Uninstall from the current project:
-
-```bash
-open-context-map uninstall .
-```
-
-## Use with opencode
-
-`opencode` recognizes project configuration in `opencode.json` and also loads files inside `.opencode/`.
-
-`open-context-map init` uses that official mechanism and registers a local MCP called `open-context-map`.
-
-It also includes:
-
-- skill: `.opencode/skills/open-context-map-first/SKILL.md`
-- commands: `.opencode/commands/bug-context.md` and `.opencode/commands/explain-flow.md`
-- subagent: `.opencode/agents/context-first.md`
-
 ## Automatic indexing
 
-There is no need to run a separate service.
+You do not need a separate database or background service.
 
 - `init` leaves the project ready
 - the MCP server starts a native watcher
-- when you change files, only affected files are reindexed
+- only changed files are reindexed
 - the index stays local in `.open-context-map/index.json`
 
-## MCP tools
+## Supported source files
 
-- `index_repo`
-- `search_code_graph`
-- `get_symbol`
-- `find_callers`
-- `find_callees`
-- `trace_flow`
-- `analyze_impact`
-- `build_context_pack`
+The current parser reads these extensions:
 
-## Security
+- `.js`, `.mjs`, `.cjs`, `.jsx`
+- `.ts`, `.tsx`
+- `.py`
+- `.go`
+- `.java`
+- `.cs`
+- `.php`
+- `.rb`
+- `.rs`
+- `.kt`
+- `.swift`
 
-Important decisions:
+## Honest limits
 
-- no external runtime dependencies
-- it does not execute code from the analyzed repository
-- it only reads allowed extensions
-- it ignores heavy or risky directories
-- it limits file size
-- it limits trace depth and result count
-- it validates known context types
-- it restricts paths outside the configured repository
-- it redacts common secret patterns before storing signatures and details in the local index
-- it compacts signatures and details to reduce noise and save tokens in MCP responses
-- it stores the local index in `.open-context-map/`
+This tool is useful, but it is not magic.
 
-Important for client projects and PR review:
+- it is not a replacement for your editor's LSP
+- the parser is heuristic, so dynamic language tricks may be missed
+- it reads text only and does not execute repository code
+- it skips large files over `350000` bytes
+- it stops after `5000` files by default
+- it skips heavy directories such as `node_modules`, `.git`, `dist`, `build`, `coverage`, `.next`, `.cache`, and `target`
 
-- `opencode.json` and `.opencode/` are project configuration and must be treated as trusted code
-- if you review an untrusted branch or PR, open `opencode` with `OPENCODE_DISABLE_PROJECT_CONFIG=1`
-- avoid workflows that execute untrusted PRs with `pull_request_target`
-- this repository's GitHub Actions workflows use SHA-pinned actions and automated dependency review on PRs
+The graph is a helper. The source files are still the final truth.
 
-The `opencode` integration was reviewed against public repositories and known ecosystem sources:
+## Security summary
 
-- `anomalyco/opencode` on GitHub, especially its `README`
-- `Kilo-Org/kilocode`, which maintains the configuration schema used by `opencode` for MCP, skills, commands, and agents
-- `charmbracelet/crush`, as a reference for the open skill and agent format in nearby tools
+This README only gives the short version. Read `docs/SECURITY_BEGINNER.md` and `SECURITY.md` for more detail.
 
-Also read:
+- the runtime uses built-in Node.js APIs only
+- the tool does not execute the code it analyzes
+- paths outside the selected repository are blocked
+- secret-like text is redacted before snippets are stored in the local index
+- the MCP setup follows the official local server format from the `opencode` docs
+- `opencode.json` and `.opencode/` are project configuration, so treat them as trusted code
 
-- `docs/MANUAL_BEGINNER.md`
-- `docs/SECURITY_BEGINNER.md`
-- `docs/GITHUB_SECURITY_SETUP_BEGINNER.md`
-- `docs/HOW_IT_WAS_BUILT.md`
-- `docs/OPENCODE_ALIGNMENT.md`
-- `SECURITY.md`
+If you are reviewing an untrusted branch or PR, start `opencode` like this:
+
+```bash
+OPENCODE_DISABLE_PROJECT_CONFIG=1 opencode
+```
+
+## Uninstall
+
+To remove the generated project setup:
+
+```bash
+pnpm dlx @juliodiazru/open-context-map@0.1.3 uninstall .
+```
+
+That removes the generated MCP entry, helper files, and the local index directory.
+
+## Documentation map
+
+- `docs/MANUAL_BEGINNER.md`: first-time tutorial in simple language
+- `docs/TROUBLESHOOTING_BEGINNER.md`: common problems and quick fixes
+- `docs/SECURITY_BEGINNER.md`: beginner-friendly security explanation
+- `docs/GITHUB_SECURITY_SETUP_BEGINNER.md`: GitHub hardening checklist
+- `docs/RELEASE_PROCESS.md`: maintainer release flow for PR, tag, release, and npm publish
+- `docs/HOW_IT_WAS_BUILT.md`: contributor-friendly implementation overview
+- `docs/OPENCODE_ALIGNMENT.md`: why the generated setup matches `opencode`
+- `docs/PLAN.md`: current roadmap and next steps
+- `SECURITY.md`: formal security policy and trust model
 
 ## Verification
 
-Run:
+If you are contributing to this repository, run:
 
 ```bash
 pnpm run check
@@ -222,17 +245,17 @@ pnpm run check
 
 That runs:
 
-- automated tests
+- `pnpm test`
 - `pnpm audit --audit-level moderate`
 
 ## Project status
 
-The goal of this version is to validate this flow:
+The current release validates this workflow:
 
 1. build a local code map
 2. query it from the CLI
 3. expose it through MCP
 4. use it from `opencode` before editing code
-5. analyze the impact of changing a symbol
+5. analyze change impact before editing
 
-The foundation of this approach matches established work on program comprehension and code change: Weiser (program slicing, IEEE TSE 1984), LaToza/Venolia/DeLine (mental models, ICSE 2006), Maalej et al. (TOSEM 2014), and RepoCoder (EMNLP 2023).
+The idea is informed by well-known work on program comprehension and code change, including Weiser on program slicing, LaToza/Venolia/DeLine on developer mental models, Maalej et al. on structural navigation, and RepoCoder on structured retrieval for code tasks.
